@@ -13,19 +13,9 @@ class FAIREOSchema(BaseDatasetSchema):
     )
     selection = fields.String(
         missing="rgb", description="Read RGB channels or more than 3 channels", example="all/rgb"
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-=======
     )
     mode = fields.String(
         missing=None, description="train/val or test task", example="train"
->>>>>>> Stashed changes
->>>>>>> Stashed changes
     )
 
 class FAIREOObjectDetectionYoloSchema(BaseDatasetSchema):
@@ -43,15 +33,9 @@ class FAIREOObjectDetectionYoloSchema(BaseDatasetSchema):
     csv_file = fields.String(
         missing=None, description="CSV file on disk", example="./data/train.csv"
     )
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-=======
     task = fields.String(
         missing=None, description="training, validation or test task", example="train"
     )
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 
 class FAIREOObjectDetectionPascalSchema(BaseDatasetSchema):
     """
@@ -67,10 +51,6 @@ class FAIREOObjectDetectionPascalSchema(BaseDatasetSchema):
     )
     csv_file = fields.String(
         missing=None, description="CSV file on disk", example="./data/train.csv"
-<<<<<<< Updated upstream
-=======
-<<<<<<< Updated upstream
-=======
     )
 
 class FAIREOObjectDetectionCocoSchema(BaseDatasetSchema):
@@ -136,8 +116,4 @@ class OSMDatasetSchema(BaseDatasetSchema):
     )
     mode = fields.String(
         missing=None, description="train/val or test task", example="train"
->>>>>>> Stashed changes
->>>>>>> Stashed changes
->>>>>>> Stashed changes
->>>>>>> Stashed changes
     )
