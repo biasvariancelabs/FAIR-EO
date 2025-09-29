@@ -117,3 +117,16 @@ class OSMDatasetSchema(BaseDatasetSchema):
     mode = fields.String(
         missing=None, description="train/val or test task", example="train"
     )
+
+class SpaceNet8DatasetSchema(BaseDatasetSchema):
+    """
+    Schema for configuring the SpaceNet8 dataset.
+    """
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./Germany_Training_Public/"
+    )
+    mode = fields.String(
+        missing="post-event",
+        description="Use only post-event images or pre-/post-event pairs",
+        example="pairs",
+    )
