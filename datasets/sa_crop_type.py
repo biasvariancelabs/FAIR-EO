@@ -9,7 +9,7 @@ import math
 
 from .semantic_segmentation import SemanticSegmentationDataset
 from ..utils import image_loader
-from .schemas import FAIREOSchema
+from .schemas import SACropTypeSchema
 
 """
 This dataset was produced as part of the Radiant Earth Spot the Crop Challenge 
@@ -26,8 +26,8 @@ class SACropTypeDataset(SemanticSegmentationDataset):
     labels = ["no-data","lucerne/medics","planted pastures","fallow","wine grapes","weeds","small grain grazing","wheat","canola","rooibos"]
     color_mapping = [[0,0,0],[255,0,0],[255,255,0],[192,192,0],[0,255,0],[125,125,125],[0,0,255],[0,255,255],[198,196,255],[0,0,192]] 
     name = "SA Crop Type"
-    schema = FAIREOSchema
-
+    schema = SACropTypeSchema
+    
     def __init__(self, config):
         # now call the constructor to validate the schema and split the data
         super().__init__(config)
