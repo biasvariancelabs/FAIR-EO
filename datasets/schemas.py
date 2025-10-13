@@ -130,3 +130,20 @@ class SpaceNet8DatasetSchema(BaseDatasetSchema):
         description="Use only post-event images or pre-/post-event pairs",
         example="pairs",
     )
+
+class SACropTypeSchema(BaseDatasetSchema):
+    """
+    Schema for configuring SA Crop Type dataset.
+    """
+    csv_file = fields.String(
+        missing=None, description="CSV file on disk", example="./data/train.csv"
+    )
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/CESBIO/"
+    )
+    selection = fields.String(
+        missing="rgb", description="Read RGB channels or 13 channels", example="all/rgb"
+    )
+    date = fields.Int(
+        missing=None, description="Read only one image out of a time series", example=1
+    )
