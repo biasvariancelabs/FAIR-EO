@@ -147,3 +147,40 @@ class SACropTypeSchema(BaseDatasetSchema):
     date = fields.Int(
         missing=None, description="Read only one image out of a time series", example=1
     )
+
+class MTS12Schema(BaseDatasetSchema):
+    """
+    Schema for configuring the MTS12 dataset.
+    """
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/CESBIO/"
+    )
+    selection = fields.String(
+        missing="rgb", description="Read RGB channels or more than 3 channels", example="all/rgb"
+    )
+    date = fields.String(
+        missing=None, description="Visualise images for a particular date", example="1"
+    )  
+    imagery = fields.String(
+        missing="s2", description="Select which Sentinel imagery to use: 's1' for Sentinel-1, 's2' for Sentinel-2", example="s2"
+    )
+    split = fields.String(
+        missing="train", description="Select which split to use, train, val or test", example="train"
+    )
+
+class Sen4AgriNetSchema(BaseDatasetSchema):
+    csv_file = fields.String(
+        missing=None, description="CSV file on disk", example="./data/train.csv"
+    )
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/CESBIO/"
+    )
+    selection = fields.String(
+        missing="rgb", description="Read RGB channels or more than 3 channels", example="all/rgb"
+    )
+    date = fields.String(
+        missing=None, description="Visualise images for a particular date", example="1"
+    )
+    class_selection = fields.String(
+        missing = "12", description = "Select the 12 core classes or all 168 classes", example="12/all"
+    )
