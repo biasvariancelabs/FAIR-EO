@@ -35,7 +35,7 @@ class LarchCasebearerTreeClassificationDataset(BaseObjectDetectionDataset):
         super().__init__(config)
         self.image_dir = self.config.image_dir
         self.annotations_dir = self.config.annotations_dir
-        self.csv_file = self.config.imageset_file
+        self.csv_file = self.config.csv_file
 
         self.labels, self.annotations, self.data = self.load_dataset(
             self.annotations_dir, self.image_dir, self.csv_file
