@@ -114,7 +114,7 @@ class ArtifiVePotsdamDataset(BaseObjectDetectionDataset):
         return labels, annot, data
 
     def data_distribution_table(self):
-        df = pd.DataFrame(self.annotations)
+        df = pd.DataFrame(self.annot)
         df_count = df.groupby("label").value_counts()
         df_count = pd.DataFrame(df_count).reset_index()
         df_count = df_count.drop(['label'], axis=1)
