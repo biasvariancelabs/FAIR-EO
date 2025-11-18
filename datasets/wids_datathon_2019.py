@@ -6,6 +6,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
+import fnmatch
 
 '''
 The Global WiDS team, the West Big Data Innovation Hub, and the WiDS Datathon Committee have partnered 
@@ -47,17 +48,15 @@ class WiDSDatathon2019Dataset(MultiClassClassificationDataset):
 
     def load_dataset(self):
         data = []
+        # the dataset is originally split into about 70/20/10 train/val/test splits
+        # csv_files created by BVLabs give a new 60/20/20 train/val/test split
         if self.csv_file:
-
-            with open(self.csv_file, "r") as f:
-                csv_reader = csv.reader(f)
-                raw_data = list(csv_reader)[1 :]
-
-                for index, row in enumerate(raw_data):
-                    file_name = row[0][: 9] + '.jpg'
-                    if file_name not in os.listdir(self.data_dir):
-                        None
-                    else: 
+            if fnmatch.fnmatch(self.csv_file, '*widsdatathon2019_*'): # new split
+                with open(self.csv_file, "r") as f:
+                    csv_reader = csv.reader(f)
+                    raw_data = list(csv_reader)[1 :]
+                    for index, row in enumerate(raw_data):
+                        file_name = os.path.join(row[3], row[0][: 9] + '.jpg')
                         if row[1] == '0':
                             label = 'no plantation'
                         elif row[1] == 0:
@@ -68,8 +67,28 @@ class WiDSDatathon2019Dataset(MultiClassClassificationDataset):
                             os.path.join(self.data_dir, file_name),
                             self.labels.index(label),
                         )
-
                         data.append(item)
+
+            else: # original split
+                with open(self.csv_file, "r") as f:
+                    csv_reader = csv.reader(f)
+                    raw_data = list(csv_reader)[1 :]
+                    for index, row in enumerate(raw_data):
+                        file_name = row[0][: 9] + '.jpg'
+                        if file_name not in os.listdir(self.data_dir):
+                            None
+                        else: 
+                            if row[1] == '0':
+                                label = 'no plantation'
+                            elif row[1] == 0:
+                                label = 'no plantation'
+                            else:
+                                label = 'plantation'
+                            item = (
+                                os.path.join(self.data_dir, file_name),
+                                self.labels.index(label),
+                            )
+                            data.append(item)
 
         if not self.labels:
             raise ValueError("You need to provide the list of labels for the dataset")
