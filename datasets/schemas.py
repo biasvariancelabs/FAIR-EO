@@ -184,3 +184,17 @@ class Sen4AgriNetSchema(BaseDatasetSchema):
     class_selection = fields.String(
         missing = "12", description = "Select the 12 core classes or all 168 classes", example="12/all"
     )
+
+class BrazilDAMSchema(BaseDatasetSchema):
+    """
+    Schema for configuring the BrazilDAM dataset.
+    """
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/CESBIO/"
+    )
+    csv_file = fields.String(
+        missing=None, description="CSV file on disk", example="./data/train.csv"
+    )
+    imagery = fields.String(
+        missing="sentinel", description="Select which imagery to use: 'sentinel', 'landsat' or 'sentinel and landsat'", example="sentinel"
+    )

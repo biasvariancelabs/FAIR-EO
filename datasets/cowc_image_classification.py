@@ -4,6 +4,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
+import fnmatch
 
 from ..utils import image_loader
 from .multiclass_classification import MultiClassClassificationDataset
@@ -47,21 +48,42 @@ class COWCImageClassificationDataset(MultiClassClassificationDataset):
         data = []
         raw_data = []
         if self.csv_file:
-            with open(self.csv_file, "r",encoding="utf-8-sig") as f:
-                for line in f:
-                    line = line.strip()
-                    raw_data.append(line.split(' '))
-                       
-                for index, row in enumerate(raw_data):
-                    file_name = row[0]
-                    label = row[1]
-                    
-                    item = (
-                        os.path.join(self.data_dir, file_name),
-                        int(label),
-                    )
+            # txt csv_file were provided by the authors of the dataset with a 80/20 train/test split
+            # csv csv_file were provided by BVLabs with a 60/20/20 train/val/test split (stratified based on classes and location)
+            if fnmatch.fnmatch(self.csv_file, '*.txt'):
+                with open(self.csv_file, "r",encoding="utf-8-sig") as f:
+                    for line in f:
+                        line = line.strip()
+                        raw_data.append(line.split(' '))
+                        
+                    for index, row in enumerate(raw_data):
+                        file_name = row[0]
+                        label = row[1]
+                        
+                        item = (
+                            os.path.join(self.data_dir, file_name),
+                            int(label),
+                        )
 
-                    data.append(item)
+                        data.append(item)
+
+            elif fnmatch.fnmatch(self.csv_file, '*.csv'):
+                with open(self.csv_file, "r", encoding="utf-8-sig") as f:
+                    reader = csv.reader(f)
+                    next(reader, None) # skip header
+                    for row in reader:
+                        file_name = row[0]  # "train/car.xxx.png"
+                        location = row[1]  # e.g. "Utah_AGRC"
+                        label = row[2]  # car or neg
+                        if label == 'neg':
+                            label = 'negative'
+
+                        item = (
+                            os.path.join(self.data_dir, location, file_name),
+                            self.labels.index(label),            
+                        )
+
+                        data.append(item)
 
         if not self.labels:
             raise ValueError("You need to provide the list of labels for the dataset")
@@ -69,13 +91,8 @@ class COWCImageClassificationDataset(MultiClassClassificationDataset):
         return data
 
     def data_distribution_table(self):
-        raw_data = []
-        with open(self.csv_file, "r",encoding="utf-8-sig") as f:
-            for line in f:
-                line = line.strip()
-                raw_data.append(line.split(' '))
-
-        df = pd.DataFrame(raw_data, columns=['File_name', 'Label'])
+        df = pd.DataFrame(self.data, columns=['File_name', 'Label'])
+        
         label_count = df.groupby("Label").count().reset_index()
         label_count.columns = ["Label", "Count"]
         label_count["Label"] = ['Negative','Car']
@@ -106,11 +123,9 @@ class COWCImageClassificationDataset(MultiClassClassificationDataset):
         return fig
     
     def show_samples(self):
-        raw_data = []
-        with open(self.csv_file, "r",encoding="utf-8-sig") as f:
-                for line in f:
-                    line = line.strip()
-                    raw_data.append(line.split(' '))
+        file_names = [os.path.basename(item[0]) for item in self.data]
+        labels = [item[1] for item in self.data]
 
-        df = pd.DataFrame(raw_data, columns=['File_name', 'Label'])
+        df = pd.DataFrame({'File_name': file_names, 'Label': labels})
+
         return df.head(20)
