@@ -1,0 +1,574 @@
+path,initial_split,class
+Boating/Boating_046.png,Tra,Boating
+Ploughing/Ploughing_017.png,Tra,Ploughing
+TrafficCongestion/TrafficCongestion_003 .png,Test,TrafficCongestion
+PostEarthquake/PostEarthquake_042 .png,Test,PostEarthquake
+Boating/Boating_021.png,Tra,Boating
+Concert/Concert_046.png,Tra,Concert
+Flood/Flood_047.png,Tra,Flood
+NonEvent/NonEvent_151.png,Tra,NonEvent
+Constructing/Constructing_024 .png,Test,Constructing
+Party/Party_032.png,Tra,Party
+TrafficCollision/TrafficCollision_043.png,Tra,TrafficCollision
+Soccer/Soccer_052.png,Tra,Soccer
+Harvesting/Harvesting_044 .png,Test,Harvesting
+Basketball/Basketball_032 .png,Test,Basketball
+NonEvent/NonEvent_073 .png,Test,NonEvent
+NonEvent/NonEvent_075.png,Tra,NonEvent
+Party/Party_025 .png,Test,Party
+Constructing/Constructing_019.png,Tra,Constructing
+Party/Party_028.png,Tra,Party
+Running/Running_082 .png,Test,Running
+NonEvent/NonEvent_100 .png,Test,NonEvent
+Basketball/Basketball_021.png,Tra,Basketball
+PostEarthquake/PostEarthquake_035 .png,Test,PostEarthquake
+PoliceChase/PoliceChase_021 .png,Test,PoliceChase
+PoliceChase/PoliceChase_038.png,Tra,PoliceChase
+Cycling/Cycling_001 .png,Test,Cycling
+CarRacing/CarRacing_014 .png,Test,CarRacing
+NonEvent/NonEvent_133 .png,Test,NonEvent
+Flood/Flood_021 .png,Test,Flood
+ParadeProtest/ParadeProtest_024 .png,Test,ParadeProtest
+Constructing/Constructing_038 .png,Test,Constructing
+Baseball/Baseball_026 .png,Test,Baseball
+Cycling/Cycling_042 .png,Test,Cycling
+Party/Party_011 .png,Test,Party
+NonEvent/NonEvent_102.png,Tra,NonEvent
+ParadeProtest/ParadeProtest_022 .png,Test,ParadeProtest
+PostEarthquake/PostEarthquake_020 .png,Test,PostEarthquake
+Ploughing/Ploughing_051 .png,Test,Ploughing
+Ploughing/Ploughing_037.png,Tra,Ploughing
+NonEvent/NonEvent_125.png,Tra,NonEvent
+Cycling/Cycling_021 .png,Test,Cycling
+Party/Party_007 .png,Test,Party
+PostEarthquake/PostEarthquake_037 .png,Test,PostEarthquake
+Landslide/Landslide_047 .png,Test,Landslide
+Conflict/Conflict_018.png,Tra,Conflict
+ParadeProtest/ParadeProtest_048.png,Tra,ParadeProtest
+Flood/Flood_009.png,Tra,Flood
+Swimming/Swimming_026.png,Tra,Swimming
+Running/Running_052 .png,Test,Running
+TrafficCollision/TrafficCollision_016 .png,Test,TrafficCollision
+Conflict/Conflict_010 .png,Test,Conflict
+NonEvent/NonEvent_039.png,Tra,NonEvent
+TrafficCollision/TrafficCollision_041.png,Tra,TrafficCollision
+PoliceChase/PoliceChase_049.png,Tra,PoliceChase
+NonEvent/NonEvent_114 .png,Test,NonEvent
+Ploughing/Ploughing_003.png,Tra,Ploughing
+PoliceChase/PoliceChase_004 .png,Test,PoliceChase
+Baseball/Baseball_043 .png,Test,Baseball
+Harvesting/Harvesting_065.png,Tra,Harvesting
+CarRacing/CarRacing_017.png,Tra,CarRacing
+ParadeProtest/ParadeProtest_031.png,Tra,ParadeProtest
+Cycling/Cycling_040 .png,Test,Cycling
+Running/Running_063.png,Tra,Running
+Harvesting/Harvesting_049 .png,Test,Harvesting
+TrafficCongestion/TrafficCongestion_030 .png,Test,TrafficCongestion
+Running/Running_067.png,Tra,Running
+TrafficCollision/TrafficCollision_030.png,Tra,TrafficCollision
+ParadeProtest/ParadeProtest_022.png,Tra,ParadeProtest
+Harvesting/Harvesting_041.png,Tra,Harvesting
+PoliceChase/PoliceChase_041.png,Tra,PoliceChase
+PoliceChase/PoliceChase_045.png,Tra,PoliceChase
+Swimming/Swimming_019 .png,Test,Swimming
+Mudslide/Mudslide_044.png,Tra,Mudslide
+Fire/Fire_057.png,Tra,Fire
+Ploughing/Ploughing_033.png,Tra,Ploughing
+NonEvent/NonEvent_051.png,Tra,NonEvent
+NonEvent/NonEvent_154 .png,Test,NonEvent
+Ploughing/Ploughing_005.png,Tra,Ploughing
+NonEvent/NonEvent_017 .png,Test,NonEvent
+Ploughing/Ploughing_044.png,Tra,Ploughing
+Running/Running_065 .png,Test,Running
+Mudslide/Mudslide_005.png,Tra,Mudslide
+Swimming/Swimming_018.png,Tra,Swimming
+Cycling/Cycling_033 .png,Test,Cycling
+NonEvent/NonEvent_004.png,Tra,NonEvent
+Fire/Fire_048.png,Tra,Fire
+Flood/Flood_025 .png,Test,Flood
+NonEvent/NonEvent_088 .png,Test,NonEvent
+Cycling/Cycling_046.png,Tra,Cycling
+Running/Running_060 .png,Test,Running
+Mudslide/Mudslide_033.png,Tra,Mudslide
+Party/Party_038 .png,Test,Party
+Boating/Boating_017.png,Tra,Boating
+Ploughing/Ploughing_015.png,Tra,Ploughing
+Landslide/Landslide_002.png,Tra,Landslide
+Harvesting/Harvesting_062 .png,Test,Harvesting
+NonEvent/NonEvent_054 .png,Test,NonEvent
+Cycling/Cycling_027 .png,Test,Cycling
+ParadeProtest/ParadeProtest_036.png,Tra,ParadeProtest
+NonEvent/NonEvent_010.png,Tra,NonEvent
+Landslide/Landslide_022 .png,Test,Landslide
+Constructing/Constructing_056.png,Tra,Constructing
+CarRacing/CarRacing_009.png,Tra,CarRacing
+Boating/Boating_046 .png,Test,Boating
+Boating/Boating_025.png,Tra,Boating
+NonEvent/NonEvent_131.png,Tra,NonEvent
+Concert/Concert_048.png,Tra,Concert
+Running/Running_049 .png,Test,Running
+Mudslide/Mudslide_042 .png,Test,Mudslide
+Soccer/Soccer_007.png,Tra,Soccer
+Mudslide/Mudslide_023.png,Tra,Mudslide
+PoliceChase/PoliceChase_017 .png,Test,PoliceChase
+Soccer/Soccer_018.png,Tra,Soccer
+TrafficCollision/TrafficCollision_028.png,Tra,TrafficCollision
+Mudslide/Mudslide_028.png,Tra,Mudslide
+Conflict/Conflict_006.png,Tra,Conflict
+PostEarthquake/PostEarthquake_002 .png,Test,PostEarthquake
+Soccer/Soccer_031.png,Tra,Soccer
+Ploughing/Ploughing_008.png,Tra,Ploughing
+Landslide/Landslide_005 .png,Test,Landslide
+NonEvent/NonEvent_024.png,Tra,NonEvent
+ParadeProtest/ParadeProtest_041 .png,Test,ParadeProtest
+ReligiousActivity/ReligiousActivity_010 .png,Test,ReligiousActivity
+Basketball/Basketball_009 .png,Test,Basketball
+NonEvent/NonEvent_105 .png,Test,NonEvent
+Running/Running_020.png,Tra,Running
+Baseball/Baseball_002.png,Tra,Baseball
+NonEvent/NonEvent_005 .png,Test,NonEvent
+Swimming/Swimming_029 .png,Test,Swimming
+TrafficCollision/TrafficCollision_022 .png,Test,TrafficCollision
+Boating/Boating_014.png,Tra,Boating
+Cycling/Cycling_001.png,Tra,Cycling
+Swimming/Swimming_034 .png,Test,Swimming
+Concert/Concert_017 .png,Test,Concert
+Mudslide/Mudslide_012.png,Tra,Mudslide
+TrafficCollision/TrafficCollision_002.png,Tra,TrafficCollision
+Running/Running_035.png,Tra,Running
+Harvesting/Harvesting_054 .png,Test,Harvesting
+Fire/Fire_029.png,Tra,Fire
+Boating/Boating_023 .png,Test,Boating
+Basketball/Basketball_046 .png,Test,Basketball
+PostEarthquake/PostEarthquake_051.png,Tra,PostEarthquake
+Cycling/Cycling_024 .png,Test,Cycling
+NonEvent/NonEvent_134 .png,Test,NonEvent
+ParadeProtest/ParadeProtest_035 .png,Test,ParadeProtest
+Soccer/Soccer_044.png,Tra,Soccer
+ParadeProtest/ParadeProtest_008.png,Tra,ParadeProtest
+Party/Party_008.png,Tra,Party
+Running/Running_046 .png,Test,Running
+NonEvent/NonEvent_123.png,Tra,NonEvent
+Running/Running_050.png,Tra,Running
+Concert/Concert_019.png,Tra,Concert
+ParadeProtest/ParadeProtest_037.png,Tra,ParadeProtest
+Boating/Boating_048.png,Tra,Boating
+Baseball/Baseball_006.png,Tra,Baseball
+Party/Party_012 .png,Test,Party
+PoliceChase/PoliceChase_027.png,Tra,PoliceChase
+PoliceChase/PoliceChase_002.png,Tra,PoliceChase
+NonEvent/NonEvent_158.png,Tra,NonEvent
+NonEvent/NonEvent_101.png,Tra,NonEvent
+Swimming/Swimming_019.png,Tra,Swimming
+Running/Running_005.png,Tra,Running
+Running/Running_053.png,Tra,Running
+NonEvent/NonEvent_118 .png,Test,NonEvent
+Landslide/Landslide_028.png,Tra,Landslide
+Mudslide/Mudslide_006 .png,Test,Mudslide
+TrafficCollision/TrafficCollision_022.png,Tra,TrafficCollision
+Concert/Concert_037 .png,Test,Concert
+PostEarthquake/PostEarthquake_015.png,Tra,PostEarthquake
+ReligiousActivity/ReligiousActivity_012 .png,Test,ReligiousActivity
+Concert/Concert_025.png,Tra,Concert
+Constructing/Constructing_054 .png,Test,Constructing
+TrafficCongestion/TrafficCongestion_018 .png,Test,TrafficCongestion
+Soccer/Soccer_039 .png,Test,Soccer
+Harvesting/Harvesting_042 .png,Test,Harvesting
+Flood/Flood_008.png,Tra,Flood
+NonEvent/NonEvent_009.png,Tra,NonEvent
+Boating/Boating_027 .png,Test,Boating
+Soccer/Soccer_022.png,Tra,Soccer
+PoliceChase/PoliceChase_034.png,Tra,PoliceChase
+TrafficCollision/TrafficCollision_015 .png,Test,TrafficCollision
+Swimming/Swimming_042.png,Tra,Swimming
+Fire/Fire_025 .png,Test,Fire
+Flood/Flood_027.png,Tra,Flood
+Swimming/Swimming_036 .png,Test,Swimming
+CarRacing/CarRacing_005.png,Tra,CarRacing
+TrafficCongestion/TrafficCongestion_033.png,Tra,TrafficCongestion
+Harvesting/Harvesting_032 .png,Test,Harvesting
+Boating/Boating_008 .png,Test,Boating
+Soccer/Soccer_014 .png,Test,Soccer
+NonEvent/NonEvent_028.png,Tra,NonEvent
+TrafficCongestion/TrafficCongestion_043.png,Tra,TrafficCongestion
+Constructing/Constructing_049.png,Tra,Constructing
+Concert/Concert_006.png,Tra,Concert
+Basketball/Basketball_003.png,Tra,Basketball
+Cycling/Cycling_036.png,Tra,Cycling
+PoliceChase/PoliceChase_012 .png,Test,PoliceChase
+NonEvent/NonEvent_032 .png,Test,NonEvent
+Baseball/Baseball_015.png,Tra,Baseball
+Mudslide/Mudslide_051.png,Tra,Mudslide
+Cycling/Cycling_018 .png,Test,Cycling
+Soccer/Soccer_015.png,Tra,Soccer
+PostEarthquake/PostEarthquake_007 .png,Test,PostEarthquake
+Conflict/Conflict_015 .png,Test,Conflict
+CarRacing/CarRacing_025.png,Tra,CarRacing
+Harvesting/Harvesting_020 .png,Test,Harvesting
+Running/Running_074.png,Tra,Running
+Running/Running_025.png,Tra,Running
+Landslide/Landslide_046.png,Tra,Landslide
+Baseball/Baseball_030 .png,Test,Baseball
+Flood/Flood_040.png,Tra,Flood
+NonEvent/NonEvent_102 .png,Test,NonEvent
+Flood/Flood_050.png,Tra,Flood
+NonEvent/NonEvent_078 .png,Test,NonEvent
+ReligiousActivity/ReligiousActivity_016.png,Tra,ReligiousActivity
+CarRacing/CarRacing_008 .png,Test,CarRacing
+NonEvent/NonEvent_016.png,Tra,NonEvent
+Harvesting/Harvesting_040 .png,Test,Harvesting
+Running/Running_048.png,Tra,Running
+Harvesting/Harvesting_056 .png,Test,Harvesting
+Running/Running_058 .png,Test,Running
+ReligiousActivity/ReligiousActivity_015.png,Tra,ReligiousActivity
+CarRacing/CarRacing_020.png,Tra,CarRacing
+Boating/Boating_010 .png,Test,Boating
+Boating/Boating_050 .png,Test,Boating
+Cycling/Cycling_033.png,Tra,Cycling
+Running/Running_003.png,Tra,Running
+Basketball/Basketball_042 .png,Test,Basketball
+PostEarthquake/PostEarthquake_054.png,Tra,PostEarthquake
+Swimming/Swimming_015 .png,Test,Swimming
+Basketball/Basketball_020.png,Tra,Basketball
+Harvesting/Harvesting_016.png,Tra,Harvesting
+Soccer/Soccer_051.png,Tra,Soccer
+Concert/Concert_047.png,Tra,Concert
+Swimming/Swimming_033 .png,Test,Swimming
+Landslide/Landslide_034 .png,Test,Landslide
+Soccer/Soccer_047 .png,Test,Soccer
+Constructing/Constructing_015 .png,Test,Constructing
+Landslide/Landslide_030 .png,Test,Landslide
+Boating/Boating_025 .png,Test,Boating
+Cycling/Cycling_031 .png,Test,Cycling
+Basketball/Basketball_012 .png,Test,Basketball
+NonEvent/NonEvent_097.png,Tra,NonEvent
+Harvesting/Harvesting_011 .png,Test,Harvesting
+Constructing/Constructing_019 .png,Test,Constructing
+Fire/Fire_039.png,Tra,Fire
+Ploughing/Ploughing_027.png,Tra,Ploughing
+ParadeProtest/ParadeProtest_015 .png,Test,ParadeProtest
+Landslide/Landslide_045.png,Tra,Landslide
+NonEvent/NonEvent_059 .png,Test,NonEvent
+Running/Running_043.png,Tra,Running
+Harvesting/Harvesting_021.png,Tra,Harvesting
+Basketball/Basketball_025 .png,Test,Basketball
+PostEarthquake/PostEarthquake_035.png,Tra,PostEarthquake
+Soccer/Soccer_044 .png,Test,Soccer
+Mudslide/Mudslide_039 .png,Test,Mudslide
+Baseball/Baseball_038 .png,Test,Baseball
+TrafficCongestion/TrafficCongestion_006 .png,Test,TrafficCongestion
+Cycling/Cycling_032.png,Tra,Cycling
+ParadeProtest/ParadeProtest_003 .png,Test,ParadeProtest
+Mudslide/Mudslide_033 .png,Test,Mudslide
+NonEvent/NonEvent_011.png,Tra,NonEvent
+Fire/Fire_052.png,Tra,Fire
+ReligiousActivity/ReligiousActivity_042.png,Tra,ReligiousActivity
+Flood/Flood_011 .png,Test,Flood
+ReligiousActivity/ReligiousActivity_049.png,Tra,ReligiousActivity
+TrafficCongestion/TrafficCongestion_005.png,Tra,TrafficCongestion
+Flood/Flood_048 .png,Test,Flood
+Soccer/Soccer_006 .png,Test,Soccer
+Cycling/Cycling_012 .png,Test,Cycling
+Running/Running_078.png,Tra,Running
+Landslide/Landslide_006 .png,Test,Landslide
+Running/Running_072.png,Tra,Running
+Flood/Flood_014.png,Tra,Flood
+PostEarthquake/PostEarthquake_053.png,Tra,PostEarthquake
+Swimming/Swimming_020 .png,Test,Swimming
+Soccer/Soccer_023 .png,Test,Soccer
+Running/Running_063 .png,Test,Running
+Swimming/Swimming_030.png,Tra,Swimming
+Mudslide/Mudslide_037 .png,Test,Mudslide
+Harvesting/Harvesting_057 .png,Test,Harvesting
+PostEarthquake/PostEarthquake_029 .png,Test,PostEarthquake
+PoliceChase/PoliceChase_050.png,Tra,PoliceChase
+NonEvent/NonEvent_149.png,Tra,NonEvent
+TrafficCongestion/TrafficCongestion_003.png,Tra,TrafficCongestion
+Swimming/Swimming_001 .png,Test,Swimming
+Ploughing/Ploughing_026.png,Tra,Ploughing
+ParadeProtest/ParadeProtest_021.png,Tra,ParadeProtest
+ReligiousActivity/ReligiousActivity_001 .png,Test,ReligiousActivity
+Constructing/Constructing_025.png,Tra,Constructing
+Ploughing/Ploughing_052 .png,Test,Ploughing
+Fire/Fire_007 .png,Test,Fire
+Boating/Boating_018.png,Tra,Boating
+Constructing/Constructing_015.png,Tra,Constructing
+Fire/Fire_047.png,Tra,Fire
+ReligiousActivity/ReligiousActivity_008.png,Tra,ReligiousActivity
+Flood/Flood_044.png,Tra,Flood
+Constructing/Constructing_043 .png,Test,Constructing
+Constructing/Constructing_009 .png,Test,Constructing
+NonEvent/NonEvent_013 .png,Test,NonEvent
+TrafficCongestion/TrafficCongestion_035.png,Tra,TrafficCongestion
+Baseball/Baseball_016.png,Tra,Baseball
+Flood/Flood_034 .png,Test,Flood
+TrafficCollision/TrafficCollision_012.png,Tra,TrafficCollision
+NonEvent/NonEvent_137.png,Tra,NonEvent
+Cycling/Cycling_014 .png,Test,Cycling
+TrafficCollision/TrafficCollision_044 .png,Test,TrafficCollision
+NonEvent/NonEvent_076.png,Tra,NonEvent
+TrafficCollision/TrafficCollision_042 .png,Test,TrafficCollision
+Soccer/Soccer_033 .png,Test,Soccer
+NonEvent/NonEvent_080.png,Tra,NonEvent
+Constructing/Constructing_030 .png,Test,Constructing
+Harvesting/Harvesting_059 .png,Test,Harvesting
+Baseball/Baseball_044 .png,Test,Baseball
+NonEvent/NonEvent_052.png,Tra,NonEvent
+TrafficCollision/TrafficCollision_006 .png,Test,TrafficCollision
+PostEarthquake/PostEarthquake_050.png,Tra,PostEarthquake
+Fire/Fire_027 .png,Test,Fire
+NonEvent/NonEvent_064.png,Tra,NonEvent
+Landslide/Landslide_048.png,Tra,Landslide
+TrafficCollision/TrafficCollision_045.png,Tra,TrafficCollision
+ReligiousActivity/ReligiousActivity_020 .png,Test,ReligiousActivity
+Basketball/Basketball_049.png,Tra,Basketball
+Fire/Fire_054.png,Tra,Fire
+ReligiousActivity/ReligiousActivity_039 .png,Test,ReligiousActivity
+TrafficCongestion/TrafficCongestion_023.png,Tra,TrafficCongestion
+PostEarthquake/PostEarthquake_034.png,Tra,PostEarthquake
+Landslide/Landslide_003.png,Tra,Landslide
+Swimming/Swimming_015.png,Tra,Swimming
+ReligiousActivity/ReligiousActivity_018.png,Tra,ReligiousActivity
+NonEvent/NonEvent_164.png,Tra,NonEvent
+ReligiousActivity/ReligiousActivity_002 .png,Test,ReligiousActivity
+ReligiousActivity/ReligiousActivity_009 .png,Test,ReligiousActivity
+ParadeProtest/ParadeProtest_003.png,Tra,ParadeProtest
+Ploughing/Ploughing_011.png,Tra,Ploughing
+Running/Running_083.png,Tra,Running
+ParadeProtest/ParadeProtest_025 .png,Test,ParadeProtest
+ReligiousActivity/ReligiousActivity_025.png,Tra,ReligiousActivity
+NonEvent/NonEvent_092.png,Tra,NonEvent
+Running/Running_078 .png,Test,Running
+Mudslide/Mudslide_041.png,Tra,Mudslide
+Constructing/Constructing_007 .png,Test,Constructing
+Baseball/Baseball_033.png,Tra,Baseball
+NonEvent/NonEvent_032.png,Tra,NonEvent
+Running/Running_039 .png,Test,Running
+TrafficCollision/TrafficCollision_037.png,Tra,TrafficCollision
+Basketball/Basketball_031 .png,Test,Basketball
+Baseball/Baseball_027.png,Tra,Baseball
+Mudslide/Mudslide_054.png,Tra,Mudslide
+Swimming/Swimming_036.png,Tra,Swimming
+NonEvent/NonEvent_096 .png,Test,NonEvent
+Cycling/Cycling_052 .png,Test,Cycling
+Mudslide/Mudslide_027.png,Tra,Mudslide
+Flood/Flood_022 .png,Test,Flood
+Ploughing/Ploughing_009 .png,Test,Ploughing
+NonEvent/NonEvent_169.png,Tra,NonEvent
+ReligiousActivity/ReligiousActivity_043 .png,Test,ReligiousActivity
+ParadeProtest/ParadeProtest_035.png,Tra,ParadeProtest
+CarRacing/CarRacing_007 .png,Test,CarRacing
+Landslide/Landslide_027.png,Tra,Landslide
+Party/Party_039 .png,Test,Party
+TrafficCollision/TrafficCollision_013.png,Tra,TrafficCollision
+Mudslide/Mudslide_026 .png,Test,Mudslide
+Constructing/Constructing_050 .png,Test,Constructing
+Conflict/Conflict_020 .png,Test,Conflict
+Flood/Flood_019 .png,Test,Flood
+Boating/Boating_008.png,Tra,Boating
+Fire/Fire_028 .png,Test,Fire
+Baseball/Baseball_037.png,Tra,Baseball
+Party/Party_031 .png,Test,Party
+Landslide/Landslide_027 .png,Test,Landslide
+Baseball/Baseball_035 .png,Test,Baseball
+NonEvent/NonEvent_023 .png,Test,NonEvent
+Basketball/Basketball_016.png,Tra,Basketball
+Fire/Fire_044 .png,Test,Fire
+Harvesting/Harvesting_060.png,Tra,Harvesting
+Party/Party_050 .png,Test,Party
+Swimming/Swimming_025.png,Tra,Swimming
+ParadeProtest/ParadeProtest_016 .png,Test,ParadeProtest
+Running/Running_021 .png,Test,Running
+Harvesting/Harvesting_048 .png,Test,Harvesting
+Conflict/Conflict_009.png,Tra,Conflict
+Basketball/Basketball_029 .png,Test,Basketball
+PostEarthquake/PostEarthquake_006 .png,Test,PostEarthquake
+TrafficCongestion/TrafficCongestion_028 .png,Test,TrafficCongestion
+Cycling/Cycling_017 .png,Test,Cycling
+Boating/Boating_031.png,Tra,Boating
+Party/Party_040.png,Tra,Party
+NonEvent/NonEvent_050 .png,Test,NonEvent
+Party/Party_030 .png,Test,Party
+Basketball/Basketball_042.png,Tra,Basketball
+Fire/Fire_025.png,Tra,Fire
+Harvesting/Harvesting_022.png,Tra,Harvesting
+Concert/Concert_008 .png,Test,Concert
+NonEvent/NonEvent_042 .png,Test,NonEvent
+NonEvent/NonEvent_179.png,Tra,NonEvent
+NonEvent/NonEvent_090.png,Tra,NonEvent
+Flood/Flood_015.png,Tra,Flood
+TrafficCollision/TrafficCollision_008.png,Tra,TrafficCollision
+Constructing/Constructing_039 .png,Test,Constructing
+Landslide/Landslide_004.png,Tra,Landslide
+Soccer/Soccer_009 .png,Test,Soccer
+Flood/Flood_038 .png,Test,Flood
+Party/Party_041 .png,Test,Party
+Mudslide/Mudslide_053.png,Tra,Mudslide
+Boating/Boating_047 .png,Test,Boating
+Fire/Fire_049 .png,Test,Fire
+Running/Running_017.png,Tra,Running
+Mudslide/Mudslide_010 .png,Test,Mudslide
+Soccer/Soccer_013 .png,Test,Soccer
+Basketball/Basketball_047.png,Tra,Basketball
+TrafficCongestion/TrafficCongestion_011 .png,Test,TrafficCongestion
+PostEarthquake/PostEarthquake_027.png,Tra,PostEarthquake
+Concert/Concert_041.png,Tra,Concert
+Baseball/Baseball_003 .png,Test,Baseball
+Baseball/Baseball_032.png,Tra,Baseball
+Party/Party_033 .png,Test,Party
+Harvesting/Harvesting_022 .png,Test,Harvesting
+NonEvent/NonEvent_136.png,Tra,NonEvent
+Cycling/Cycling_023 .png,Test,Cycling
+Baseball/Baseball_044.png,Tra,Baseball
+ReligiousActivity/ReligiousActivity_024 .png,Test,ReligiousActivity
+PostEarthquake/PostEarthquake_019 .png,Test,PostEarthquake
+TrafficCongestion/TrafficCongestion_051.png,Tra,TrafficCongestion
+NonEvent/NonEvent_037.png,Tra,NonEvent
+ReligiousActivity/ReligiousActivity_041 .png,Test,ReligiousActivity
+PoliceChase/PoliceChase_046 .png,Test,PoliceChase
+TrafficCongestion/TrafficCongestion_037.png,Tra,TrafficCongestion
+ReligiousActivity/ReligiousActivity_013.png,Tra,ReligiousActivity
+Baseball/Baseball_015 .png,Test,Baseball
+Ploughing/Ploughing_038.png,Tra,Ploughing
+Mudslide/Mudslide_013 .png,Test,Mudslide
+Constructing/Constructing_001.png,Tra,Constructing
+ReligiousActivity/ReligiousActivity_044.png,Tra,ReligiousActivity
+TrafficCollision/TrafficCollision_021 .png,Test,TrafficCollision
+NonEvent/NonEvent_007.png,Tra,NonEvent
+Party/Party_015 .png,Test,Party
+Flood/Flood_031 .png,Test,Flood
+ParadeProtest/ParadeProtest_019.png,Tra,ParadeProtest
+NonEvent/NonEvent_063 .png,Test,NonEvent
+Harvesting/Harvesting_012.png,Tra,Harvesting
+Ploughing/Ploughing_030.png,Tra,Ploughing
+Soccer/Soccer_004.png,Tra,Soccer
+Running/Running_008 .png,Test,Running
+Landslide/Landslide_033.png,Tra,Landslide
+TrafficCongestion/TrafficCongestion_042 .png,Test,TrafficCongestion
+Concert/Concert_002 .png,Test,Concert
+NonEvent/NonEvent_189.png,Tra,NonEvent
+Baseball/Baseball_029.png,Tra,Baseball
+PoliceChase/PoliceChase_023.png,Tra,PoliceChase
+Cycling/Cycling_007.png,Tra,Cycling
+ReligiousActivity/ReligiousActivity_052.png,Tra,ReligiousActivity
+NonEvent/NonEvent_071 .png,Test,NonEvent
+Party/Party_045 .png,Test,Party
+NonEvent/NonEvent_142.png,Tra,NonEvent
+PostEarthquake/PostEarthquake_040 .png,Test,PostEarthquake
+Ploughing/Ploughing_005 .png,Test,Ploughing
+Constructing/Constructing_044.png,Tra,Constructing
+Cycling/Cycling_018.png,Tra,Cycling
+Constructing/Constructing_018.png,Tra,Constructing
+Flood/Flood_012 .png,Test,Flood
+Conflict/Conflict_007.png,Tra,Conflict
+Party/Party_002 .png,Test,Party
+Soccer/Soccer_021.png,Tra,Soccer
+Harvesting/Harvesting_016 .png,Test,Harvesting
+Constructing/Constructing_025 .png,Test,Constructing
+PoliceChase/PoliceChase_038 .png,Test,PoliceChase
+Fire/Fire_051 .png,Test,Fire
+Constructing/Constructing_042.png,Tra,Constructing
+Concert/Concert_034 .png,Test,Concert
+PostEarthquake/PostEarthquake_031.png,Tra,PostEarthquake
+PostEarthquake/PostEarthquake_010 .png,Test,PostEarthquake
+Running/Running_044 .png,Test,Running
+Landslide/Landslide_028 .png,Test,Landslide
+Soccer/Soccer_054.png,Tra,Soccer
+Landslide/Landslide_023 .png,Test,Landslide
+Baseball/Baseball_042 .png,Test,Baseball
+Party/Party_029.png,Tra,Party
+Mudslide/Mudslide_041 .png,Test,Mudslide
+PostEarthquake/PostEarthquake_017.png,Tra,PostEarthquake
+PostEarthquake/PostEarthquake_024.png,Tra,PostEarthquake
+Harvesting/Harvesting_017 .png,Test,Harvesting
+Fire/Fire_021 .png,Test,Fire
+Fire/Fire_015 .png,Test,Fire
+Conflict/Conflict_004 .png,Test,Conflict
+Concert/Concert_035.png,Tra,Concert
+NonEvent/NonEvent_048 .png,Test,NonEvent
+Concert/Concert_008.png,Tra,Concert
+Running/Running_043 .png,Test,Running
+Fire/Fire_036.png,Tra,Fire
+Boating/Boating_026 .png,Test,Boating
+Ploughing/Ploughing_008 .png,Test,Ploughing
+Concert/Concert_016.png,Tra,Concert
+PoliceChase/PoliceChase_009 .png,Test,PoliceChase
+Boating/Boating_043 .png,Test,Boating
+Concert/Concert_016 .png,Test,Concert
+Flood/Flood_019.png,Tra,Flood
+Landslide/Landslide_021.png,Tra,Landslide
+NonEvent/NonEvent_029.png,Tra,NonEvent
+PoliceChase/PoliceChase_009.png,Tra,PoliceChase
+PostEarthquake/PostEarthquake_051 .png,Test,PostEarthquake
+Constructing/Constructing_018 .png,Test,Constructing
+NonEvent/NonEvent_153.png,Tra,NonEvent
+Landslide/Landslide_033 .png,Test,Landslide
+NonEvent/NonEvent_126.png,Tra,NonEvent
+Baseball/Baseball_022 .png,Test,Baseball
+Basketball/Basketball_011 .png,Test,Basketball
+Fire/Fire_043.png,Tra,Fire
+Conflict/Conflict_016 .png,Test,Conflict
+Soccer/Soccer_040.png,Tra,Soccer
+Ploughing/Ploughing_022.png,Tra,Ploughing
+ParadeProtest/ParadeProtest_034.png,Tra,ParadeProtest
+NonEvent/NonEvent_099.png,Tra,NonEvent
+NonEvent/NonEvent_078.png,Tra,NonEvent
+Concert/Concert_026 .png,Test,Concert
+CarRacing/CarRacing_009 .png,Test,CarRacing
+PoliceChase/PoliceChase_033.png,Tra,PoliceChase
+ParadeProtest/ParadeProtest_032 .png,Test,ParadeProtest
+PoliceChase/PoliceChase_042 .png,Test,PoliceChase
+Constructing/Constructing_031.png,Tra,Constructing
+Soccer/Soccer_056 .png,Test,Soccer
+Swimming/Swimming_039 .png,Test,Swimming
+Mudslide/Mudslide_020 .png,Test,Mudslide
+NonEvent/NonEvent_004 .png,Test,NonEvent
+Running/Running_015.png,Tra,Running
+Harvesting/Harvesting_026 .png,Test,Harvesting
+Fire/Fire_042.png,Tra,Fire
+TrafficCollision/TrafficCollision_016.png,Tra,TrafficCollision
+Ploughing/Ploughing_014 .png,Test,Ploughing
+Party/Party_004 .png,Test,Party
+TrafficCollision/TrafficCollision_052.png,Tra,TrafficCollision
+Harvesting/Harvesting_009.png,Tra,Harvesting
+Basketball/Basketball_014 .png,Test,Basketball
+Swimming/Swimming_048 .png,Test,Swimming
+NonEvent/NonEvent_084 .png,Test,NonEvent
+TrafficCongestion/TrafficCongestion_031 .png,Test,TrafficCongestion
+Boating/Boating_016.png,Tra,Boating
+Harvesting/Harvesting_003.png,Tra,Harvesting
+Soccer/Soccer_014.png,Tra,Soccer
+TrafficCongestion/TrafficCongestion_013 .png,Test,TrafficCongestion
+Swimming/Swimming_049.png,Tra,Swimming
+Fire/Fire_033.png,Tra,Fire
+Fire/Fire_004.png,Tra,Fire
+Swimming/Swimming_009 .png,Test,Swimming
+NonEvent/NonEvent_052 .png,Test,NonEvent
+Soccer/Soccer_036 .png,Test,Soccer
+PoliceChase/PoliceChase_050 .png,Test,PoliceChase
+Running/Running_025 .png,Test,Running
+TrafficCongestion/TrafficCongestion_021 .png,Test,TrafficCongestion
+NonEvent/NonEvent_033 .png,Test,NonEvent
+Basketball/Basketball_017 .png,Test,Basketball
+ReligiousActivity/ReligiousActivity_031 .png,Test,ReligiousActivity
+Ploughing/Ploughing_042 .png,Test,Ploughing
+TrafficCollision/TrafficCollision_003.png,Tra,TrafficCollision
+TrafficCongestion/TrafficCongestion_002 .png,Test,TrafficCongestion
+Basketball/Basketball_010 .png,Test,Basketball
+Concert/Concert_002.png,Tra,Concert
+Cycling/Cycling_016.png,Tra,Cycling
+Concert/Concert_043 .png,Test,Concert
+Fire/Fire_051.png,Tra,Fire
+NonEvent/NonEvent_178.png,Tra,NonEvent
+Basketball/Basketball_036.png,Tra,Basketball
+Soccer/Soccer_048.png,Tra,Soccer
+PoliceChase/PoliceChase_029 .png,Test,PoliceChase
+Conflict/Conflict_024 .png,Test,Conflict
+Swimming/Swimming_033.png,Tra,Swimming
+NonEvent/NonEvent_074 .png,Test,NonEvent
+ReligiousActivity/ReligiousActivity_007.png,Tra,ReligiousActivity
+Running/Running_040.png,Tra,Running
+TrafficCollision/TrafficCollision_050 .png,Test,TrafficCollision
+TrafficCongestion/TrafficCongestion_044.png,Tra,TrafficCongestion
+Running/Running_082.png,Tra,Running
+Concert/Concert_021.png,Tra,Concert
