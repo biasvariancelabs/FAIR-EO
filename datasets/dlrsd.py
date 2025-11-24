@@ -2,7 +2,6 @@ import numpy as np
 import os
 import pandas as pd
 import csv
-import plt
 
 from .semantic_segmentation import SemanticSegmentationDataset
 from ..utils import image_loader
