@@ -4,6 +4,8 @@ import os
 import matplotlib.pyplot as plt
 import csv
 import seaborn as sns
+from matplotlib.patches import Patch
+import math
 
 from .semantic_segmentation import SemanticSegmentationDataset
 from .schemas import FAIREOSchema
@@ -39,7 +41,9 @@ def image_loader(file_path, convert_to_grayscale=False):
 
 class MidAirDataset(SemanticSegmentationDataset):
     
-    #zip files need to be excrated beforehand
+    # zip files need to be extracted beforehand
+    # this dataloader assumes a structure such as '/MidAir/Kite_training/images/cloudy/trajectory_3000/000000.JPEG for images 
+    # and /MidAir/Kite_training/annotations/cloudy/trajectory_3000/000000.PNG for annotations
     url = ["https://midair.ulg.ac.be/index.html"]
     labels = [
         "background",
@@ -49,7 +53,7 @@ class MidAirDataset(SemanticSegmentationDataset):
         "Ground vegetation",
         "Rocky ground",
         "Boulders",
-        "empty",
+        "Empty",
         "Water plane",
         "Man-made construction",
         "Road", "Train track",
@@ -95,25 +99,28 @@ class MidAirDataset(SemanticSegmentationDataset):
 
     def load_dataset(self, data_dir, csv_file):
         
-        ids = []
-        for i in os.listdir(data_dir):
-            weather = os.path.join(data_dir, i)
-            for j in os.listdir(weather):
-                traj = os.path.join(weather, j)
-                for k in os.listdir(traj):
-                    ids.append(i+'/'+j+'/'+k)
+        data = []
+        simulation = ['Kite_training','PLE_training']
+        for sim in simulation:
+            for weather in os.listdir(os.path.join(data_dir, sim, 'images')):
+                for traj in os.listdir(os.path.join(data_dir, sim, 'images', weather)):
+                    for file_name in os.listdir(os.path.join(data_dir, sim, 'images', weather, traj)):
+                        data.append((sim, weather, traj+'/'+file_name))
 
-        split_list = []
+        # csv_files created by BVLabs provide a 60/20/20 train/val/test split stratified based on simulation environment (Kite or PLE) and season/weather
         if csv_file: 
+            data = []
             with open(csv_file, mode ='r')as file:
                 csvFile = csv.reader(file)
+                next(csvFile, None) # skip header
                 for lines in csvFile:
+                    file_name = lines[0]
                     weather = lines[1]
-                    split_list.append(weather+'/'+lines[0])     
-            ids = split_list
+                    simulation = lines[2]
+                    data.append((simulation, weather, file_name))     
 
-        self.images = [os.path.join(data_dir, image_id) for image_id in ids]
-        self.masks = [os.path.join(data_dir[: data_dir.rfind("images")], "annotations", image_id[: image_id.rfind('.JPEG')]+'.PNG') for image_id in ids]
+        self.images = [os.path.join(data_dir, img_data[0], "images", img_data[1], img_data[2]) for img_data in data]
+        self.masks = [os.path.join(data_dir, img_data[0], "annotations", img_data[1], img_data[2][: img_data[2].rfind('.JPEG')]+'.PNG') for img_data in data]
 
 
     def __len__(self):
@@ -137,4 +144,37 @@ class MidAirDataset(SemanticSegmentationDataset):
             ax.set_title(
                 "Labels distribution for {}".format(self.get_name()), pad=20, fontsize=18
             )
+        return fig
+
+    def show_image(self, index, show_title=False):
+        img, mask = self[index]
+        img_mask = np.zeros([mask.shape[0], mask.shape[1], 3], np.uint8)
+        legend_elements = []
+        for i, label in enumerate(self.labels):
+            legend_elements.append(
+                Patch(
+                    facecolor=tuple([x / 255 for x in self.color_mapping[i]]),
+                    label=self.labels[i],
+                )
+            )
+            img_mask[np.where(mask[:, :, i] == 1)] = self.color_mapping[i]
+
+        fig = plt.figure(figsize=(10, 8))
+        height_factor = math.ceil(len(self.labels)/3)
+        if height_factor == 4:
+            height_factor = 0.73
+        elif height_factor == 2:
+            height_factor = 0.80
+        else:
+            height_factor = 0.81
+        fig.legend(handles=legend_elements, bbox_to_anchor=(0.1, height_factor, 0.8, 0.2), ncol=3, mode='expand',
+                   loc='lower left', prop={'size': 12})
+        plt.subplot(1, 2, 1)
+        plt.imshow(img)
+        plt.axis("off")
+        plt.subplot(1, 2, 2)
+        plt.imshow(img_mask)
+        plt.axis("off")
+        fig.tight_layout()
+        plt.show()
         return fig

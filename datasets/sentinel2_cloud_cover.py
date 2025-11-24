@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import pandas as pd
+import csv
 from .semantic_segmentation import SemanticSegmentationDataset
 from ..utils import image_loader
 from .schemas import FAIREOSchema
@@ -31,7 +32,12 @@ class Sentinel2CloudCoverSegmentationDataset(SemanticSegmentationDataset):
         imageB02 = image_loader(self.images_B02[index])
         imageB03 = image_loader(self.images_B03[index])
         imageB04 = image_loader(self.images_B04[index])
-        image = np.dstack((imageB02,imageB03,imageB04)) / 5000
+        image = np.dstack((imageB02,imageB03,imageB04))/5000
+
+        # to consider all 4 channels
+        #imageB08 = image_loader(self.images_B08[index])
+        #image = np.dstack((imageB02,imageB03,imageB04,imageB08))/5000
+
         mask = image_loader(self.masks[index])
         masks = [(mask == v) for v, label in enumerate(self.labels)]
         mask = np.stack(masks, axis=-1).astype("float32")
@@ -41,13 +47,33 @@ class Sentinel2CloudCoverSegmentationDataset(SemanticSegmentationDataset):
     def load_dataset(self, data_dir, csv_file):
         if not self.labels:
             raise ValueError("You need to provide the list of labels for the dataset")
+        
+        # the original dataset is split into train/test sets
+        # csv_files created by BVLabs provide a 60/20/20 split stratified based on location and time
+        if csv_file:
+            ids = []
+            with open(csv_file, "r", encoding="utf-8-sig") as f:
+                reader = csv.reader(f)
+                next(reader, None) # skip header
+                for row in reader:
+                    chip_id = row[0] 
+                    location = row[1]  
+                    datetime = row[2] 
+                    original_split = row[3]
+                    ids.append((chip_id, original_split))
+            self.images_B02 = [os.path.join(data_dir, image_id[1], "features", image_id[0], 'B02.tif') for image_id in ids]
+            self.images_B03 = [os.path.join(data_dir, image_id[1], "features", image_id[0], 'B03.tif') for image_id in ids]
+            self.images_B04 = [os.path.join(data_dir, image_id[1], "features", image_id[0], 'B04.tif') for image_id in ids]
+            self.images_B08 = [os.path.join(data_dir, image_id[1], "features", image_id[0], 'B08.tif') for image_id in ids]
+            self.masks = [os.path.join(data_dir, image_id[1], "labels", image_id[0] + '.tif') for image_id in ids]
 
-        ids = os.listdir(os.path.join(data_dir, "features"))
-        self.images_B02 = [os.path.join(data_dir, "features", image_id, 'B02.tif') for image_id in ids]
-        self.images_B03 = [os.path.join(data_dir, "features", image_id, 'B03.tif') for image_id in ids]
-        self.images_B04 = [os.path.join(data_dir, "features", image_id, 'B04.tif') for image_id in ids]
-        self.images_B08 = [os.path.join(data_dir, "features", image_id, 'B08.tif') for image_id in ids]
-        self.masks = [os.path.join(data_dir, "labels", image_id + '.tif') for image_id in ids]
+        else: # original split
+            ids = os.listdir(os.path.join(data_dir, "features"))
+            self.images_B02 = [os.path.join(data_dir, "features", image_id, 'B02.tif') for image_id in ids]
+            self.images_B03 = [os.path.join(data_dir, "features", image_id, 'B03.tif') for image_id in ids]
+            self.images_B04 = [os.path.join(data_dir, "features", image_id, 'B04.tif') for image_id in ids]
+            self.images_B08 = [os.path.join(data_dir, "features", image_id, 'B08.tif') for image_id in ids]
+            self.masks = [os.path.join(data_dir, "labels", image_id + '.tif') for image_id in ids]
 
     def data_distribution_table(self):
         label_dist = {key: 0 for key in self.labels}

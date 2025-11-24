@@ -2,6 +2,8 @@ import numpy as np
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
+import csv
+import seaborn as sns
 
 from .semantic_segmentation import SemanticSegmentationDataset
 from ..utils import image_loader
@@ -17,8 +19,10 @@ and test collections as part of the AgriFieldNet India Competition.
 class AgriFieldNetDataset(SemanticSegmentationDataset):
     url = "https://source.coop/repositories/radiantearth/agrifieldnet-competition/access"
 
-    labels = ["no-data","wheat","mustard","lentil","no crop/fallow","green pea","sugarcane","garlic","maize","gram","coriandre","potato","bersem","rice"]
-    color_mapping = [[0,0,0],[192,50,192],[255,0,0],[255,255,0],[192,192,0],[0,255,0],[125,125,125],[0,0,255],[255,255,255],[0,125,255],[125,0,125],[125,125,0],[125,255,0],[125,0,255]] 
+    labels = ["no-data","wheat","mustard","lentil","no crop/fallow","green pea","sugarcane","garlic","maize",
+              "gram","coriandre","potato","bersem","rice"]
+    color_mapping = [[0,0,0],[192,50,192],[255,0,0],[255,255,0],[192,192,0],[0,255,0],[125,125,125],[0,0,255],
+                     [255,255,255],[0,125,255],[125,0,125],[125,125,0],[125,255,0],[125,0,255]] 
     name = "AgriFieldNet"
     schema = FAIREOSchema
 
@@ -63,24 +67,55 @@ class AgriFieldNetDataset(SemanticSegmentationDataset):
     def load_dataset(self, data_dir, csv_file):
         if not self.labels:
             raise ValueError("You need to provide the list of labels for the dataset")
+        
+        # the dataset originally comes with a train/test split of 1165/47
+        # csv_files are provided by BVLabs with a 60%/20%/20% train/val/test split of 727/242/243
+        if csv_file:
+            ids = []
+            with open(csv_file, "r") as f:
+                reader = csv.reader(f)
+                next(reader, None) # skip header
+                for row in reader:
+                    img_id = row[0] 
+                    original_split = row[1] 
+                    ids.append((img_id, original_split))
 
-        ids = os.listdir(os.path.join(data_dir, "source/B01"))
-        self.imagesB01 = [os.path.join(data_dir, "source/B01", image_id) for image_id in ids]
-        self.imagesB02 = [os.path.join(data_dir, "source/B02", image_id[: image_id.rfind('B01')]+'B02_10m.tif') for image_id in ids]
-        self.imagesB03 = [os.path.join(data_dir, "source/B03", image_id[: image_id.rfind('B01')]+'B03_10m.tif') for image_id in ids]
-        self.imagesB04 = [os.path.join(data_dir, "source/B04", image_id[: image_id.rfind('B01')]+'B04_10m.tif') for image_id in ids]
-        self.imagesB05 = [os.path.join(data_dir, "source/B05", image_id[: image_id.rfind('B01')]+'B05_10m.tif') for image_id in ids]
-        self.imagesB06 = [os.path.join(data_dir, "source/B06", image_id[: image_id.rfind('B01')]+'B06_10m.tif') for image_id in ids]
-        self.imagesB07 = [os.path.join(data_dir, "source/B07", image_id[: image_id.rfind('B01')]+'B07_10m.tif') for image_id in ids]
-        self.imagesB08 = [os.path.join(data_dir, "source/B08", image_id[: image_id.rfind('B01')]+'B08_10m.tif') for image_id in ids]
-        self.imagesB8A = [os.path.join(data_dir, "source/B8A", image_id[: image_id.rfind('B01')]+'B8A_10m.tif') for image_id in ids]
-        self.imagesB09 = [os.path.join(data_dir, "source/B09", image_id[: image_id.rfind('B01')]+'B09_10m.tif') for image_id in ids]
-        self.imagesB10 = [os.path.join(data_dir, "source/B10", image_id[: image_id.rfind('B01')]+'B10_10m.tif') for image_id in ids]
-        self.imagesB11 = [os.path.join(data_dir, "source/B11", image_id[: image_id.rfind('B01')]+'B11_10m.tif') for image_id in ids]
-        self.imagesB12 = [os.path.join(data_dir, "source/B12", image_id[: image_id.rfind('B01')]+'B12_10m.tif') for image_id in ids]
+            self.imagesB01 = [os.path.join(data_dir, image_id[1], "source/B01", f'{image_id[0]}_B01_10m.tif') for image_id in ids]
+            self.imagesB02 = [os.path.join(data_dir, image_id[1], "source/B02", f'{image_id[0]}_B02_10m.tif') for image_id in ids]
+            self.imagesB03 = [os.path.join(data_dir, image_id[1], "source/B03", f'{image_id[0]}_B03_10m.tif') for image_id in ids]
+            self.imagesB04 = [os.path.join(data_dir, image_id[1], "source/B04", f'{image_id[0]}_B04_10m.tif') for image_id in ids]
+            self.imagesB05 = [os.path.join(data_dir, image_id[1], "source/B05", f'{image_id[0]}_B05_10m.tif') for image_id in ids]
+            self.imagesB06 = [os.path.join(data_dir, image_id[1], "source/B06", f'{image_id[0]}_B06_10m.tif') for image_id in ids]
+            self.imagesB07 = [os.path.join(data_dir, image_id[1], "source/B07", f'{image_id[0]}_B07_10m.tif') for image_id in ids]
+            self.imagesB08 = [os.path.join(data_dir, image_id[1], "source/B08", f'{image_id[0]}_B08_10m.tif') for image_id in ids]
+            self.imagesB8A = [os.path.join(data_dir, image_id[1], "source/B8A", f'{image_id[0]}_B8A_10m.tif') for image_id in ids]
+            self.imagesB09 = [os.path.join(data_dir, image_id[1], "source/B09", f'{image_id[0]}_B09_10m.tif') for image_id in ids]
+            self.imagesB10 = [os.path.join(data_dir, image_id[1], "source/B10", f'{image_id[0]}_B10_10m.tif') for image_id in ids]
+            self.imagesB11 = [os.path.join(data_dir, image_id[1], "source/B11", f'{image_id[0]}_B11_10m.tif') for image_id in ids]
+            self.imagesB12 = [os.path.join(data_dir, image_id[1], "source/B12", f'{image_id[0]}_B12_10m.tif') for image_id in ids]
 
-        self.images = [os.path.join(data_dir, "source", image_id) for image_id in ids]
-        self.masks = [os.path.join(data_dir, "labels", image_id[: image_id.rfind('_source_')]+'_labels'+image_id[38 : 44]+'.tif') for image_id in ids]
+            self.images = [os.path.join(data_dir, image_id[1], "source/B01", f'{image_id[0]}_B01_10m.tif') for image_id in ids]
+            self.masks = [os.path.join(data_dir, image_id[1], "labels", image_id[0][: image_id[0].rfind('_source_')]+'_labels'+image_id[0][38 : 44]+'.tif') for image_id in ids]
+
+        else: # original split
+            ids = os.listdir(os.path.join(data_dir, "source/B01"))
+
+            self.imagesB01 = [os.path.join(data_dir, "source/B01", image_id) for image_id in ids]
+            self.imagesB02 = [os.path.join(data_dir, "source/B02", image_id[: image_id.rfind('B01')]+'B02_10m.tif') for image_id in ids]
+            self.imagesB03 = [os.path.join(data_dir, "source/B03", image_id[: image_id.rfind('B01')]+'B03_10m.tif') for image_id in ids]
+            self.imagesB04 = [os.path.join(data_dir, "source/B04", image_id[: image_id.rfind('B01')]+'B04_10m.tif') for image_id in ids]
+            self.imagesB05 = [os.path.join(data_dir, "source/B05", image_id[: image_id.rfind('B01')]+'B05_10m.tif') for image_id in ids]
+            self.imagesB06 = [os.path.join(data_dir, "source/B06", image_id[: image_id.rfind('B01')]+'B06_10m.tif') for image_id in ids]
+            self.imagesB07 = [os.path.join(data_dir, "source/B07", image_id[: image_id.rfind('B01')]+'B07_10m.tif') for image_id in ids]
+            self.imagesB08 = [os.path.join(data_dir, "source/B08", image_id[: image_id.rfind('B01')]+'B08_10m.tif') for image_id in ids]
+            self.imagesB8A = [os.path.join(data_dir, "source/B8A", image_id[: image_id.rfind('B01')]+'B8A_10m.tif') for image_id in ids]
+            self.imagesB09 = [os.path.join(data_dir, "source/B09", image_id[: image_id.rfind('B01')]+'B09_10m.tif') for image_id in ids]
+            self.imagesB10 = [os.path.join(data_dir, "source/B10", image_id[: image_id.rfind('B01')]+'B10_10m.tif') for image_id in ids]
+            self.imagesB11 = [os.path.join(data_dir, "source/B11", image_id[: image_id.rfind('B01')]+'B11_10m.tif') for image_id in ids]
+            self.imagesB12 = [os.path.join(data_dir, "source/B12", image_id[: image_id.rfind('B01')]+'B12_10m.tif') for image_id in ids]
+
+            self.images = [os.path.join(data_dir, "source/B01", image_id) for image_id in ids]
+            self.masks = [os.path.join(data_dir, "labels", image_id[: image_id.rfind('_source_')]+'_labels'+image_id[38 : 44]+'.tif') for image_id in ids]
 
     def data_distribution_table(self):
         label_dist = {key: 0 for key in self.labels}
@@ -91,3 +126,15 @@ class AgriFieldNetDataset(SemanticSegmentationDataset):
         label_count.columns = ["Number of pixels"]
         label_count = label_count.astype(float)
         return label_count
+    
+    def data_distribution_barchart(self, show_title=True):
+        label_count = self.data_distribution_table()
+        label_count = label_count.iloc[1:]   # skip the no-data label for better visualization
+        fig, ax = plt.subplots(figsize=(12, 10))
+        sns.barplot(data=label_count, x=label_count.index, y='Number of pixels', ax=ax)
+        fig.autofmt_xdate()
+        if show_title:
+            ax.set_title(
+                "Labels distribution for {}".format(self.get_name()), pad=20, fontsize=18
+            )
+        return fig

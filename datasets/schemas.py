@@ -198,3 +198,37 @@ class BrazilDAMSchema(BaseDatasetSchema):
     imagery = fields.String(
         missing="sentinel", description="Select which imagery to use: 'sentinel', 'landsat' or 'sentinel and landsat'", example="sentinel"
     )
+
+class SEN12MSSchema(BaseDatasetSchema):
+    """
+    Schema for configuring SEN12MS dataset.
+    """
+    csv_file = fields.String(
+        missing=None, description="CSV file on disk", example="./data/train.csv"
+    )
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/CESBIO/"
+    )
+    selection = fields.String(
+        missing="rgb", description="Read RGB channels or more than 3 channels", example="all/rgb"
+    )
+    imagery = fields.String(
+        missing="s2", description="Consider s1, s2 or both s1 and s2 images", example="s1/s2/s1 and s2"
+    )
+
+class PASTISHDSchema(BaseDatasetSchema):
+    """
+    Schema for configuring PASTIS-HD dataset.
+    """
+    csv_file = fields.String(
+        missing=None, description="CSV file on disk", example="./data/train.csv"
+    )
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/CESBIO/"
+    )
+    selection = fields.String(
+        missing="rgb", description="Read RGB channels or more than 3 channels", example="all/rgb"
+    )
+    imagery = fields.String(
+        missing="SPOT", description="read S1A, S1D, S2 and SPOT imagery or SPOT imagery only", example="all/SPOT"
+    )

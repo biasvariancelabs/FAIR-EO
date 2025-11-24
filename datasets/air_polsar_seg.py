@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import pandas as pd
+import csv
 
 from .semantic_segmentation import SemanticSegmentationDataset
 from ..utils import image_loader
@@ -30,7 +31,6 @@ class AIRPolSARSegDataset(SemanticSegmentationDataset):
         self.selection = self.config.selection
         self.csv_file = self.config.csv_file
 
-
     def __getitem__(self, index):
         mask = image_loader(self.masks[index])
         single_band_mask = np.zeros([mask.shape[0], mask.shape[1]], np.uint8)
@@ -55,39 +55,57 @@ class AIRPolSARSegDataset(SemanticSegmentationDataset):
 
         if self.selection == "rgb":
             imageHH = image_loader(self.imagesHH[index])
-            imageHV = image_loader(self.imagesHH[index])
+            imageHV = image_loader(self.imagesHV[index])
             imageHH_HV = (imageHH/imageHV).astype("uint16")
-            imageVH = image_loader(self.imagesHH[index])
-            imageVV = image_loader(self.imagesHH[index])
             image = np.dstack((imageHH, imageHV, imageHH_HV))
-            if self.transform:
-                image = self.transform(image)
-            if self.target_transform:
-                mask = self.target_transform(mask)
-            return image, mask
 
-        else:
+        elif self.selection == "all bands":
+            imageHH = image_loader(self.imagesHH[index])
+            imageHV = image_loader(self.imagesHV[index])
+            imageVH = image_loader(self.imagesVH[index])
+            imageVV = image_loader(self.imagesVV[index])
+            image = np.dstack((imageHH, imageHV, imageVH, imageVV))
+
+        else: # HH images
             image = image_loader(self.images[index])
 
-            if self.transform:
-                image = self.transform(image)
-            if self.target_transform:
-               mask = self.target_transform(mask)
+        if self.transform:
+            image = self.transform(image)
+        if self.target_transform:
+            mask = self.target_transform(mask)
 
-            return image, mask
+        return image, mask
 
     def load_dataset(self, data_dir, csv_file):
         if not self.labels:
             raise ValueError("You need to provide the list of labels for the dataset")
+        
+        # the dataset originally comes with a 70/30 train/test split
+        # csv_files were created by BVLabs with a 60/20/20 train/val/test split
+        if csv_file:
+            ids = []
+            with open(csv_file, "r", encoding="utf-8-sig") as f:
+                reader = csv.reader(f)
+                next(reader, None) # skip header
+                for row in reader:
+                    img_id = row[0] 
+                    original_split = row[1] 
+                    ids.append((img_id, original_split))
+            self.images = [os.path.join(data_dir, f'{image_id[1]}_set', "images/HH", f'{image_id[1]}_{image_id[0]}_HH.tiff') for image_id in ids]
+            self.imagesHH = [os.path.join(data_dir, f'{image_id[1]}_set', "images/HH", f'{image_id[1]}_{image_id[0]}_HH.tiff') for image_id in ids]
+            self.imagesHV = [os.path.join(data_dir, f'{image_id[1]}_set', "images/HV", f'{image_id[1]}_{image_id[0]}_HV.tiff') for image_id in ids]
+            self.imagesVH = [os.path.join(data_dir, f'{image_id[1]}_set', "images/VH", f'{image_id[1]}_{image_id[0]}_VH.tiff') for image_id in ids]
+            self.imagesVV = [os.path.join(data_dir, f'{image_id[1]}_set', "images/VV", f'{image_id[1]}_{image_id[0]}_VV.tiff') for image_id in ids]
+            self.masks = [os.path.join(data_dir, f'{image_id[1]}_set', "labels", f'{image_id[1]}_{image_id[0]}_gt.png') for image_id in ids]
 
-        ids = os.listdir(os.path.join(data_dir, "images/HH"))
-
-        self.images = [os.path.join(data_dir, "images/HH", image_id) for image_id in ids]
-        self.imagesHH = [os.path.join(data_dir, "images/HH", image_id) for image_id in ids]
-        self.imagesHV = [os.path.join(data_dir, "images/HV", image_id) for image_id in ids]
-        self.imagesVH = [os.path.join(data_dir, "images/VH", image_id) for image_id in ids]
-        self.imagesVV = [os.path.join(data_dir, "images/VV", image_id) for image_id in ids]
-        self.masks = [os.path.join(data_dir, "labels", image_id[: image_id.rfind('HH')]+'gt.png') for image_id in ids]
+        else: # original split
+            ids = os.listdir(os.path.join(data_dir, "images/HH"))
+            self.images = [os.path.join(data_dir, "images/HH", image_id) for image_id in ids]
+            self.imagesHH = [os.path.join(data_dir, "images/HH", image_id) for image_id in ids]
+            self.imagesHV = [os.path.join(data_dir, "images/HV", image_id[: image_id.rfind('HH')]+'HV.tiff') for image_id in ids]
+            self.imagesVH = [os.path.join(data_dir, "images/VH", image_id[: image_id.rfind('HH')]+'VH.tiff') for image_id in ids]
+            self.imagesVV = [os.path.join(data_dir, "images/VV", image_id[: image_id.rfind('HH')]+'VV.tiff') for image_id in ids]
+            self.masks = [os.path.join(data_dir, "labels", image_id[: image_id.rfind('HH')]+'gt.png') for image_id in ids]
 
     def data_distribution_table(self):
         label_dist = {key: 0 for key in self.labels}

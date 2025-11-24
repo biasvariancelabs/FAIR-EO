@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import pandas as pd
+import csv
 
 from .semantic_segmentation import SemanticSegmentationDataset
 from ..utils import image_loader
@@ -47,8 +48,19 @@ class SatelliteBuildingsDataset(SemanticSegmentationDataset):
     def load_dataset(self, data_dir, csv_file):
         if not self.labels:
             raise ValueError("You need to provide the list of labels for the dataset")
+        
+        # the dataset originally comes with a train/test split of 6023/8
+        # csv_files are provided by BVLabs with a 60%/20%/20% train/val/test split of 3619/1206/1206
+        if csv_file:
+            ids = []
+            with open(csv_file, "r", encoding="utf-8-sig") as f:
+                reader = csv.reader(f)
+                for row in reader:
+                    img_id = row[0].split('/')[1]
+                    ids.append((img_id))
 
-        ids = os.listdir(os.path.join(data_dir, "src"))
+        else: # original split
+            ids = os.listdir(os.path.join(data_dir, "src"))
 
         self.images = [os.path.join(data_dir, "src", image_id) for image_id in ids]
         self.masks = [os.path.join(data_dir, "label", image_id) for image_id in ids]

@@ -4,9 +4,10 @@ import numpy as np
 import pandas as pd
 from matplotlib.patches import Patch
 import seaborn as sns
+import csv
 
 from ..utils import image_loader
-from .schemas import FAIREOSchema
+from .schemas import PASTISHDSchema
 from .semantic_segmentation import SemanticSegmentationDataset
 
 
@@ -17,7 +18,7 @@ for compatibility with the aitlas framework.
 '''
 
 class PASTISHDDataset(SemanticSegmentationDataset):
-    schema = FAIREOSchema
+    schema = PASTISHDSchema
     name = "PASTIS HD"
     url = "https://huggingface.co/datasets/IGNF/PASTIS-HD"
     labels = [
@@ -68,11 +69,13 @@ class PASTISHDDataset(SemanticSegmentationDataset):
     def __init__(self, config):
         super().__init__(config)
         self.data_dir = self.config.data_dir
+        self.csv_file = self.config.csv_file
         self.selection = self.config.selection
+        self.imagery = self.config.imagery
 
     def __getitem__(self, index):
         id = self.data[index]
-        # the data contains only one SPOT image but time series for S2 and S1
+        # the data contains only one SPOT image per patch but time series for S2 and S1
         spot_image = image_loader(os.path.join(self.data_dir, "DATA_SPOT", "PASTIS_SPOT6_RVB_1M00_2019",f"SPOT6_RVB_1M00_2019_{id}.tif"))
         s2_image = np.load(os.path.join(self.data_dir, "DATA_S2", f"S2_{id}.npy"))
         s1a_image = np.load(os.path.join(self.data_dir, "DATA_S1A", f"S1A_{id}.npy"),allow_pickle=True)
@@ -82,23 +85,36 @@ class PASTISHDDataset(SemanticSegmentationDataset):
         image_list = []
         image_list_s1a = []
         image_list_s1d = []
-        for t in range(s2_image.shape[0]):
+        for t in range(s2_image.shape[0]): # S2 has 10 bands
             if self.selection == "rgb":
                 time_step_image = np.transpose(s2_image[t, [2,1,0]], (1, 2, 0))
             else:
                 time_step_image = np.transpose(s2_image[t, :], (1, 2, 0))
             image_list.append(time_step_image)
-        s2_image = np.array(image_list)
+        s2 = np.array(image_list)
 
         for t in range(s1a_image.shape[0]): # S1 has VV, VH and VV/VH bands
             time_step_image_s1a = np.transpose(s1a_image[t, 0:3], (1, 2, 0))
             image_list_s1a.append(time_step_image_s1a)
-        s1a_image = np.array(image_list_s1a)
+        s1a = np.array(image_list_s1a)
 
         for t in range(s1d_image.shape[0]): # S1 has VV, VH and VV/VH bands
             time_step_image_s1d = np.transpose(s1d_image[t, 0:3], (1, 2, 0))
             image_list_s1d.append(time_step_image_s1d)
-        s1d_image = np.array(image_list_s1d)
+        s1d = np.array(image_list_s1d)
+
+        timeseries = {
+                "sentinel1a": s1a,
+                "sentinel1d": s1d,
+                "sentinel2": s2
+            }
+    
+        if self.imagery == 'all':
+            image = np.array([spot_image, timeseries])
+        elif self.imagery == 'SPOT':
+            image = spot_image
+            if self.transform:
+                image = self.transform(image)
 
         if len(mask.shape) == 3:
             semantic_mask = mask[0]
@@ -107,8 +123,10 @@ class PASTISHDDataset(SemanticSegmentationDataset):
 
         num_classes = len(self.labels)
         mask = np.eye(num_classes)[semantic_mask]
+        if self.target_transform:
+            mask = self.target_transform(mask)
 
-        return self.apply_transformations(s2_image, mask)
+        return image, mask
 
     def load_dataset(self, data_dir, csv_file=None):
         # Find IDs which have both S2 data and annotations (not all images are annotated)
@@ -125,6 +143,17 @@ class PASTISHDDataset(SemanticSegmentationDataset):
 
         common_ids = list(set(s2_ids).intersection(set(annotation_ids)))
         self.data = common_ids
+
+        # csv_files with a 60/20/20 train/val/test split are provided by BVLabs
+        # the csv_files contain the annotation file names
+        if csv_file:
+            self.data = []
+            with open(csv_file, "r", encoding="utf-8-sig") as f:
+                        reader = csv.reader(f)
+                        next(reader, None) # skip header
+                        for row in reader:
+                            file_name = row[0][7 : -4]  
+                            self.data.append(file_name)
 
     def __len__(self):
         return len(self.data)
@@ -220,43 +249,74 @@ class PASTISHDDataset(SemanticSegmentationDataset):
                 "Labels distribution for {}".format(self.get_name()), pad=20, fontsize=18
             )
         return fig
-
+    
     def show_timeseries(self, index, longitude, latitude):
         self.selection = "all"
-        image, label = self.__getitem__(index)
+        self.imgery = "all"
+        
+        image, mask = self[index]
+        timeseries = image[1]
 
-        if len(image.shape) < 4:
-            print("Time series visualization requires temporal data")
-            return None
-
-        location = []
-        for i in range(len(image)):
-            pixel_values = image[i][longitude, latitude]
-            location.append(pixel_values)
-        location = np.array(location)
-
-        crop = label[longitude, latitude]
+        crop = mask[longitude, latitude]
         crop_name = "Unknown"
         for j, k in enumerate(self.labels):
             if crop[j] == 1:
                 crop_name = k
                 break
 
+        s1a = timeseries["sentinel1a"] 
+        s1d = timeseries["sentinel1d"] 
+        s2 = timeseries["sentinel2"] 
+
+        time_range_s1a = range(len(s1a))
+        time_range_s1d = range(len(s1d))
+        time_range_s2 = range(len(s2))
+
+        # extract S1A bands for a specific pixel
+        s1a_pixel = []
+        for b in range(3):
+            s1a_band_series = [s1a[i][longitude, latitude, b] for i in time_range_s1a]
+            s1a_pixel.append(s1a_band_series)
+
+        # extract S1D bands for a specific pixel
+        s1d_pixel = []
+        for b in range(3):
+            s1d_band_series = [s1d[i][longitude, latitude, b] for i in time_range_s1d]
+            s1d_pixel.append(s1d_band_series)
+
+        # extract Sentinel-2 bands
+        s2_pixel = []
+        for b in range(10):
+            s2_band_series = [s2[i][longitude, latitude, b] for i in time_range_s2]
+            s2_pixel.append(s2_band_series)
+
         fig, ax = plt.subplots(figsize=(10, 6))
-        ax.set_title(
-            f"S2 Time series - Index {index}, Pixel ({longitude},{latitude}), Label: {crop_name}",
-            fontsize=14,
-        )
+        ax.set_title(f"Time series with index {index} from the region with pixel coordinates ({longitude},{latitude}), with label {crop_name}\n")
 
-        band_names = ['B01', 'B02', 'B03', 'B04', 'B05', 'B06', 'B07', 'B08', 'B8A', 'B09']
-        colors = ['purple', 'blue', 'green', 'red', 'orange', 'brown', 'pink', 'gray', 'olive', 'cyan']
+        for i, s1a_band_series in enumerate(s1a_pixel):
+            if i == 0:
+                band = 'VV'
+            elif i == 1:
+                band = 'VH'
+            else: 
+                band = 'VV/VH'
+            ax.plot(time_range_s1a, s1a_band_series, label=f"S1A {band}")
 
-        n_bands = min(len(band_names), location.shape[1])
-        for i in range(n_bands):
-            ax.plot(location[:, i], label=band_names[i], color=colors[i])
+        for i, s1d_band_series in enumerate(s1d_pixel):
+            if i == 0:
+                band = 'VV'
+            elif i == 1:
+                band = 'VH'
+            else: 
+                band = 'VV/VH'
+            ax.plot(time_range_s1d, s1d_band_series, label=f"S1D {band}")
 
-        ax.legend(band_names[:n_bands])
+        for i, s2_band_series in enumerate(s2_pixel):
+            ax.plot(time_range_s2, s2_band_series, label=f"S2-B{i+1}", alpha=0.5)
+
         ax.set_xlabel("Time step")
-        ax.set_ylabel("Normalized reflectance")
-
+        ax.set_ylabel("Pixel value")
+        ax.legend()
+        plt.tight_layout()
+        plt.show()
         return fig
