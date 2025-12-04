@@ -232,3 +232,20 @@ class PASTISHDSchema(BaseDatasetSchema):
     imagery = fields.String(
         missing="SPOT", description="read S1A, S1D, S2 and SPOT imagery or SPOT imagery only", example="all/SPOT"
     )
+
+class SatlasPretrainSemanticSegmentationSchema(BaseDatasetSchema):
+    """
+    Schema for configuring SatlasPretrain dataset for the semantic segmentation task.
+    """
+    csv_file = fields.String(
+        missing=None, description="CSV file on disk", example="./data/train.csv"
+    )
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/CESBIO/"
+    )
+    tile_list = fields.String(
+        missing=None, description="Txt file with the list of tiles and their corresponding s2a, s2b, naip and label files", example="./data/tile_list.txt"
+    )
+    mode = fields.String(
+        missing=None, description="train/val or test task", example="train"
+    )
