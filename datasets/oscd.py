@@ -130,7 +130,7 @@ class OSCDDataset(BaseDataset):
                     label=self.labels[i],
                 )
             )
-            img_mask[np.where(mask[:, :, i] == i)] = self.color_mapping[i]
+            img_mask[np.where(mask[:, :, i] == 1)] = self.color_mapping[i]
 
         fig = plt.figure(figsize=(15, 6))
         plt.subplots_adjust(top=0.85, bottom=0.1)
