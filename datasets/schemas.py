@@ -249,3 +249,23 @@ class SatlasPretrainSemanticSegmentationSchema(BaseDatasetSchema):
     mode = fields.String(
         missing=None, description="train/val or test task", example="train"
     )
+
+class SSL4EOS12MLSchema(BaseDatasetSchema):
+    """
+    Schema for configuring SSL4EO-S12-ML dataset.
+    """
+    label_file = fields.String(
+        missing=None, description="json file on disk containing the labels", example="./data/labels.json"
+    )
+    csv_file = fields.String(
+        missing=None, description="CSV file on disk containing the train/val/test split", example="./data/train.csv"
+    )
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/CESBIO/"
+    )
+    selection = fields.String(
+        missing="rgb", description="Read RGB channels or more than 3 channels", example="all/rgb"
+    )
+    imagery = fields.String(
+        missing="S2 L2A", description="read S1, S2 L1C and S2 L2A imagery or one source only", example="S2 L1C/S2 L2A/S1/all"
+    )

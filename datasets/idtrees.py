@@ -11,7 +11,7 @@ import rasterio
 from shapely.geometry import box
 
 from ..utils import image_loader
-from .schemas import ObjectDetectionYoloDatasetSchema
+from .schemas import FAIREOObjectDetectionYoloSchema
 from .object_detection import BaseObjectDetectionDataset
 
 '''
@@ -21,7 +21,7 @@ spatial extent to be used for trainning. The classes are taxonomic species.
 '''
 
 class IDTReeSDataset(BaseObjectDetectionDataset):
-    schema = ObjectDetectionYoloDatasetSchema
+    schema = FAIREOObjectDetectionYoloSchema
     name = "IDTReeS"
     url = "https://zenodo.org/records/3934932"
 
