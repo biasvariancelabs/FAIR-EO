@@ -4,10 +4,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import torch
 from matplotlib.patches import Patch
-import math
-import xarray as xr
 from scipy.ndimage import zoom
 import seaborn as sns
+from netCDF4 import Dataset
 
 from ..base import BaseDataset
 from .schemas import Sen4AgriNetSchema
@@ -273,13 +272,13 @@ class Sen4AgriNetDataset(BaseDataset):
         else:
             raise ValueError(f"Invalid selection: {self.selection}")
         
-        ds_ref = xr.open_dataset(nc_path, group="B02")
-        target_shape = ds_ref["B02"].values.shape  
+        ds_ref = Dataset(nc_path, mode="r")
+        target_shape = ds_ref.groups["B02"].variables["B02"][:].shape  
 
         band_arrays = []
         for band in bands:
-            ds_band = xr.open_dataset(nc_path, group=band) 
-            arr = ds_band[band].values  # shape (T, H, W)
+            ds_band = Dataset(nc_path, mode="r") 
+            arr = ds_band.groups[band].variables[band][:]  # shape (T, H, W)
 
             # Resample only if spatial shape is different (differnt bands have different sizes)
             if (arr.shape[1], arr.shape[2]) != (target_shape[1], target_shape[2]):
@@ -311,8 +310,8 @@ class Sen4AgriNetDataset(BaseDataset):
         else:
             image = torch.tensor(image).permute(2, 0, 1) 
 
-        ds_labels = xr.open_dataset(nc_path, group="labels")
-        mask = ds_labels["labels"].values
+        ds_labels = Dataset(nc_path, mode="r")
+        mask = ds_labels.groups["labels"].variables["labels"][:]
         masks = [(mask == v) for v in self.label_ids]
         mask = np.stack(masks, axis=-1).astype(np.float32)
         mask = torch.tensor(mask).permute(2, 0, 1)  
@@ -368,14 +367,7 @@ class Sen4AgriNetDataset(BaseDataset):
             img_mask[np.where(mask[i] == 1)] = self.color_mapping[i]
 
         fig = plt.figure(figsize=(10, 8))
-        height_factor = math.ceil(len(self.labels) / 3)
-        if height_factor == 4:
-            height_factor = 0.73
-        elif height_factor == 2:
-            height_factor = 0.80
-        else:
-            height_factor = 0.81
-
+        height_factor = 0.81
         legend_width = 0.6 if self.class_selection == "12" else 1.0
         font_size = 12 if self.class_selection == "12" else 9
         xanchor = 0.2 if self.class_selection == "12" else 0
