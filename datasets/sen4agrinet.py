@@ -6,7 +6,7 @@ import torch
 from matplotlib.patches import Patch
 from scipy.ndimage import zoom
 import seaborn as sns
-from netCDF4 import Dataset
+import h5py
 
 from ..base import BaseDataset
 from .schemas import Sen4AgriNetSchema
@@ -272,13 +272,13 @@ class Sen4AgriNetDataset(BaseDataset):
         else:
             raise ValueError(f"Invalid selection: {self.selection}")
         
-        ds_ref = Dataset(nc_path, mode="r")
-        target_shape = ds_ref.groups["B02"].variables["B02"][:].shape  
+        ds_ref = h5py.File(nc_path, "r")
+        target_shape = ds_ref["B02"]["B02"][:].shape  
 
         band_arrays = []
         for band in bands:
-            ds_band = Dataset(nc_path, mode="r") 
-            arr = ds_band.groups[band].variables[band][:]  # shape (T, H, W)
+            ds_band = h5py.File(nc_path, "r") 
+            arr = ds_band[band][band][:]  # shape (T, H, W)
 
             # Resample only if spatial shape is different (differnt bands have different sizes)
             if (arr.shape[1], arr.shape[2]) != (target_shape[1], target_shape[2]):
@@ -310,8 +310,8 @@ class Sen4AgriNetDataset(BaseDataset):
         else:
             image = torch.tensor(image).permute(2, 0, 1) 
 
-        ds_labels = Dataset(nc_path, mode="r")
-        mask = ds_labels.groups["labels"].variables["labels"][:]
+        ds_labels = h5py.File(nc_path, "r")
+        mask = ds_labels["labels"]["labels"][:]
         masks = [(mask == v) for v in self.label_ids]
         mask = np.stack(masks, axis=-1).astype(np.float32)
         mask = torch.tensor(mask).permute(2, 0, 1)  
