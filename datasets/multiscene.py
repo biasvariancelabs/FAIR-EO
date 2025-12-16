@@ -55,17 +55,20 @@ class MultiSceneDataset(MultiLabelClassificationDataset):
         if not self.labels:
             with open(csv_file, "rb") as f:
                 header = f.readline().decode("utf-8")
-                labels = header[header.find(",") + 1:-2].split(",")
+                self.labels = header[header.find(",") + 1:].strip().split(",")
              
         # read labels
         multi_hot_labels = {}
         with open(csv_file, "rb") as f:
             lines = f.readlines()
             for line in lines[1:]:
-                line = line.decode("utf-8")
-                labels_list = line[line.find(",") + 1 :-2].split(",")
+                line = line.decode("utf-8").strip()
+                if not line:
+                    continue
+                labels_list = line[line.find(",") + 1 :].split(",")
+                cleaned_labels = [label.strip() if label.strip() else '0' for label in labels_list]
                 multi_hot_labels[line[: line.find(",")]] = np.asarray(
-                    list((map(float, labels_list)))
+                    list((map(float, cleaned_labels)))
                 )
 
         data = []

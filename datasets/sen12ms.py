@@ -66,7 +66,7 @@ class SEN12MSDataset(BaseDataset):
             s1image = self.transform(s1image)
 
         if self.imagery == 's1 and s2':
-            image = np.array([s1image, s2image])
+            image = (s1image, s2image)
         elif self.imagery == 's1':
             image = s1image
         elif self.imagery == 's2':
