@@ -66,7 +66,7 @@ class SEN12MSDataset(BaseDataset):
             s1image = self.transform(s1image)
 
         if self.imagery == 's1 and s2':
-            image = (s1image, s2image)
+            image = np.dstack((s1image, s2image))
         elif self.imagery == 's1':
             image = s1image
         elif self.imagery == 's2':
@@ -165,13 +165,13 @@ class SEN12MSDataset(BaseDataset):
         elif self.imagery == 's1 and s2':
             # s1 subplot
             plt.subplot(1, 3, 1)
-            plt.imshow(img[0])
+            plt.imshow(img[:,:,:3])
             plt.title("S1")
             plt.axis("off")
 
             # s2 subplot
             plt.subplot(1, 3, 2)
-            plt.imshow(img[1])
+            plt.imshow(img[:,:,3:6])
             plt.title("S2")
             plt.axis("off")
 
