@@ -39,38 +39,64 @@ class SEN12MSDataset(BaseDataset):
         self.csv_file = self.config.csv_file
         self.s1images, self.s2images, self.masks = self.load_dataset(self.data_dir, self.csv_file)
 
-
     def __getitem__(self, index):
         # Sentinel-2 image
-        s2image = image_loader(self.s2images[index])
-        if self.selection == 'rgb':
-            s2image = s2image[:,:,1:4]
-        elif self.selection == 'all': # 13 bands
-            s2image = s2image[:,:,:]
-        # Normalize image
-        img_min, img_max = s2image.min(), s2image.max()
-        s2image = (s2image - img_min) / (img_max - img_min + 1e-8)
-        if self.transform:
-            s2image = self.transform(s2image)
+        if self.imagery == 's2':
+            s2image = image_loader(self.s2images[index])
+
+            if self.selection == 'rgb':
+                s2image = s2image[:,:,1:4]
+            elif self.selection == 'all': # 13 bands
+                s2image = s2image[:,:,:]
+            # Normalize image
+            img_min, img_max = s2image.min(), s2image.max()
+            s2image = (s2image - img_min) / (img_max - img_min + 1e-8)
+            if self.transform:
+                s2image = self.transform(s2image)
+
+            image = s2image
         
         # Sentinel-1 image
-        s1image = image_loader(self.s1images[index])
-        if self.selection == 'rgb': # (VV,VH,VV/VH)
-            s1image = np.dstack((s1image[:,:,0], s1image[:,:,1], s1image[:,:,0]/s1image[:,:,1])) 
-        else: # original 2-band (VV,VH)
-            s1image = s1image[:,:,:]
-        # Normalize image
-        img_min, img_max = s1image.min(), s1image.max()
-        s1image = (s1image - img_min) / (img_max - img_min + 1e-8)
-        if self.transform:
-            s1image = self.transform(s1image)
-
-        if self.imagery == 's1 and s2':
-            image = np.dstack((s1image, s2image))
         elif self.imagery == 's1':
+            s1image = image_loader(self.s1images[index])
+        
+            if self.selection == 'rgb': # (VV,VH,VV/VH)
+                s1image = np.dstack((s1image[:,:,0], s1image[:,:,1], s1image[:,:,0]/s1image[:,:,1])) 
+            else: # original 2-band (VV,VH)
+                s1image = s1image[:,:,:]
+            # Normalize image
+            img_min, img_max = s1image.min(), s1image.max()
+            s1image = (s1image - img_min) / (img_max - img_min + 1e-8)
+            if self.transform:
+                s1image = self.transform(s1image)
+
             image = s1image
-        elif self.imagery == 's2':
-            image = s2image
+
+        # Sentinel-1 and Sentinel-2 image
+        elif self.imagery == 's1 and s2':
+            s2image = image_loader(self.s2images[index])
+            if self.selection == 'rgb':
+                s2image = s2image[:,:,1:4]
+            elif self.selection == 'all': # 13 bands
+                s2image = s2image[:,:,:]
+            # Normalize image
+            img_min, img_max = s2image.min(), s2image.max()
+            s2image = (s2image - img_min) / (img_max - img_min + 1e-8)
+            if self.transform:
+                s2image = self.transform(s2image)
+
+            s1image = image_loader(self.s1images[index])
+            if self.selection == 'rgb': # (VV,VH,VV/VH)
+                s1image = np.dstack((s1image[:,:,0], s1image[:,:,1], s1image[:,:,0]/s1image[:,:,1])) 
+            else: # original 2-band (VV,VH)
+                s1image = s1image[:,:,:]
+            # Normalize image
+            img_min, img_max = s1image.min(), s1image.max()
+            s1image = (s1image - img_min) / (img_max - img_min + 1e-8)
+            if self.transform:
+                s1image = self.transform(s1image)
+
+            image = np.dstack((s1image, s2image))
 
         # the mask contains 4 possible classification schemas
         # this selects the first schema (IGBP)
@@ -97,10 +123,49 @@ class SEN12MSDataset(BaseDataset):
                 season = row[1]
                 ids.append(img_path)
 
-        self.s1images = [os.path.join(data_dir, "images/s1", data[: data.rfind('lc')]+'s1'+data[data.rfind('lc') :][2 :]) for data in ids]
-        self.s2images = [os.path.join(data_dir, "images/s2", data[: data.rfind('lc')]+'s2'+data[data.rfind('lc') :][2 :]) for data in ids]
-        self.masks = [os.path.join(data_dir, "labels", data) for data in ids]
-        
+        s1images = [os.path.join(data_dir, "images/s1", data[: data.rfind('lc')]+'s1'+data[data.rfind('lc') :][2 :]) for data in ids]
+        s2images = [os.path.join(data_dir, "images/s2", data[: data.rfind('lc')]+'s2'+data[data.rfind('lc') :][2 :]) for data in ids]
+        masks = [os.path.join(data_dir, "labels", data) for data in ids]
+
+        # not all masks have both a corresponding s1 and s2 image
+        # filter out non-existing files 
+        if self.imagery == 's1 and s2':
+            valid_s1, valid_s2, valid_masks = [], [], []
+
+            for s1, s2, m in zip(s1images, s2images, masks):
+                if os.path.exists(s1) and os.path.exists(s2) and os.path.exists(m):
+                    valid_s1.append(s1)
+                    valid_s2.append(s2)
+                    valid_masks.append(m)
+
+            self.s1images = valid_s1
+            self.s2images = valid_s2
+            self.masks = valid_masks
+
+        elif self.imagery == 's1':
+            valid_s1, valid_masks = [], []
+
+            for s1, m in zip(s1images, masks):
+                if os.path.exists(s1) and os.path.exists(m):
+                    valid_s1.append(s1)
+                    valid_masks.append(m)
+
+            self.s1images = valid_s1
+            self.s2images = s2images
+            self.masks = valid_masks
+
+        elif self.imagery == 's2':
+            valid_s2, valid_masks = [], []
+
+            for s2, m in zip(s2images, masks):
+                if os.path.exists(s2) and os.path.exists(m):
+                    valid_s2.append(s2)
+                    valid_masks.append(m)
+
+            self.s1images = s1images
+            self.s2images = valid_s2
+            self.masks = valid_masks
+
         return self.s1images, self.s2images, self.masks
 
     def __len__(self):
