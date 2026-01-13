@@ -4,6 +4,8 @@ import pandas as pd
 import seaborn as sns
 import torch
 import json
+import csv
+import numpy as np
 
 from ..utils import image_loader
 from .schemas import FAIREOObjectDetectionYoloSchema
@@ -30,41 +32,57 @@ class HRSIDataset(BaseObjectDetectionDataset):
         self.annotation_dir = self.config.annotation_dir
         self.csv_file = self.config.csv_file 
 
-        self.labels, self.annotations, self.data = self.load_dataset(self.annotation_dir)
+        self.labels, self.annotations, self.data = self.load_dataset(self.annotation_dir, self.csv_file)
 
 
     def __getitem__(self, index):
-        img_name = self.data[index]
-        image = image_loader(os.path.join(self.data_dir, f"{img_name}.jpg")) / 255.0
+        for i in np.arange(2): # skip images where number of boxes and labels don't match after transformations
 
-        boxes = []
-        labels = []
+            img_name = self.data[index]
+            image = image_loader(os.path.join(self.data_dir, f"{img_name}.jpg")) / 255.0
 
-        # box coordinates for json files are extracted
-        for ann in self.annotations:
-            if ann["image_id"] == img_name:
-                boxes.append(ann["bbox"])
-                labels.append(ann["label"])
+            boxes = []
+            labels = []
 
-        # convert boxes into a torch.Tensor
-        boxes = torch.as_tensor(boxes, dtype=torch.float32)
+            # box coordinates for json files are extracted
+            for ann in self.annotations:
+                if ann["image_id"] == img_name:
+                    boxes.append(ann["bbox"])
+                    labels.append(ann["label"])
 
-        # suppose all instances are not crowd
-        iscrowd = torch.zeros((boxes.shape[0],), dtype=torch.int64)
+            # convert boxes into a torch.Tensor
+            boxes = torch.as_tensor(boxes, dtype=torch.float32)
 
-        labels = torch.as_tensor(labels, dtype=torch.int64)
+            # suppose all instances are not crowd
+            iscrowd = torch.zeros((boxes.shape[0],), dtype=torch.int64)
 
-        target = {"boxes": boxes, "labels": labels, "iscrowd": iscrowd} 
+            labels = torch.as_tensor(labels, dtype=torch.int64)
 
-        image, target = self.apply_transformations(image, target)
+            target = {"boxes": boxes, "labels": labels, "iscrowd": iscrowd} 
+
+            image, target = self.apply_transformations(image, target)
+
+            if len(target['boxes']) != len(target['labels']):
+                index = index + 1
+            else:
+                break
 
         return image, target
 
 
-    def load_dataset(self, annotation_dir):
+    def load_dataset(self, annotation_dir, csv_file):
         labels = []
         annotations = []
         data = []
+
+        # BVLabs provides csv files with a 60/20/20 split
+        if csv_file: 
+            with open(csv_file, "r", encoding="utf-8-sig") as f:
+                reader = csv.reader(f)
+                for row in reader:
+                    file_name = row[0].split('/')[1]
+                    base_name = file_name.rsplit('.', 1)[0]
+                    data.append(base_name)
 
         with open(annotation_dir, 'r') as f:
             annotation_json = json.load(f)
@@ -77,6 +95,11 @@ class HRSIDataset(BaseObjectDetectionDataset):
             img_id = ann["image_id"]
 
             file_name = image_id_map[img_id]
+
+            if csv_file:
+                if file_name.rsplit('.', 1)[0] not in data:
+                    continue 
+
             label_index = 1 if ann["category_id"] == 1 else 0
 
             x, y, w, h = ann["bbox"]
@@ -91,9 +114,10 @@ class HRSIDataset(BaseObjectDetectionDataset):
                 "bbox": [x, y, xmax, ymax]
             })
 
-        for img_id, file_name in image_id_map.items():
-            base_name = file_name.rsplit('.', 1)[0]
-            data.append(base_name)
+        if csv_file == None:
+            for img_id, file_name in image_id_map.items():
+                base_name = file_name.rsplit('.', 1)[0]
+                data.append(base_name)
 
         return labels, annotations, data
     

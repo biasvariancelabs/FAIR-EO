@@ -5,6 +5,7 @@ import pandas as pd
 import seaborn as sns
 import json
 import torch
+import csv
 
 from ..utils import image_loader
 from .schemas import FAIREOObjectDetectionCocoSchema
@@ -26,13 +27,21 @@ class ArtifiVePotsdamDataset(BaseObjectDetectionDataset):
         super().__init__(config)
         self.data_dir = self.config.data_dir
         self.annotation_dir = self.config.annotation_dir
+        self.csv_file = self.config.csv_file
         self.selection = self.config.selection
-        self.labels, self.annot, self.data = self.load_dataset(self.annotation_dir, self.selection)
+        self.labels, self.annot, self.data, self.original_splits = self.load_dataset(self.annotation_dir, self.csv_file, self.selection)
 
     def __getitem__(self, index):
-        for i in np.arange(2):
+        for i in np.arange(2): # skip images where number of labels and bboxes don't match after transformations
+
             img_name = self.data[index]
-            image = image_loader(os.path.join(self.data_dir, f"{img_name}.jpg"))/255
+            if self.csv_file:
+                original_split = self.original_splits[index]
+                self.annotation_dir = (os.path.join(self.data_dir, original_split, "annotations_training_patches.json") if original_split == 'training' else os.path.join(self.data_dir, original_split, "annotations_test_patches.json"))
+            else:
+                original_split = ''
+
+            image = image_loader(os.path.join(self.data_dir, original_split, f"{img_name}.jpg"))/255
             img_h, img_w = image.shape[:2]
 
             boxes = []
@@ -90,28 +99,60 @@ class ArtifiVePotsdamDataset(BaseObjectDetectionDataset):
         return image, target
 
 
-    def load_dataset(self, annotation_dir, selection):
+    def load_dataset(self, annotation_dir, csv_file, selection):
 
-        data=[]
-        annot=[]
-        labels=["no-data", "car"]
+        data = []
+        annot = []
+        original_splits = []
+        labels = ["no-data", "car"]
 
-        with open(self.annotation_dir, "r") as f:
-            annot_json = json.load(f)
+        # BVLabs provides csv files with a 60/20/20 split
+        if csv_file: 
+            with open(csv_file, "r", encoding="utf-8-sig") as f:
+                reader = csv.reader(f)
+                next(reader, None) # skip header
+                for row in reader:
+                    img_name, original_split = row[0], row[1]
+                    data.append(img_name)
+                    original_splits.append(original_split)
 
-        for item in annot_json:
-            annotations = item['annotations']['labels']
-            if len(annotations) == 0:
-                if self.selection == "all":
+            annot_paths = ["training/annotations_training_patches.json", "test/annotations_test_patches.json"]
+            for task in annot_paths:
+                with open(self.data_dir + task, "r") as f:
+                    task_annot_json = json.load(f)
+                    for item in task_annot_json:
+                        annotations = item['annotations']['labels']
+                        img_name = item['image_filename'].split(".")[0]
+                        if img_name in data:
+                            if len(annotations) == 0 and selection != 'all': # images with no bounding boxes
+                                idx = data.index(img_name)
+                                data.pop(idx)
+                                original_splits.pop(idx)
+                                continue
+                            
+                            else: # images with one or more bounding box
+                                for vehicle in annotations:
+                                    annot.append({"label": int(1)})    
+
+
+        elif csv_file == None: # use the original splits
+            data = []
+            annot = []
+            with open(self.annotation_dir, "r") as f:
+                annot_json = json.load(f)
+
+            for item in annot_json:
+                annotations = item['annotations']['labels']
+                if len(annotations) == 0 and self.selection == "all":
                     img_name = item['image_filename'].split(".")[0]
                     data.append(img_name)     
-            else:
-                for vehicle in annotations:
-                    annot.append({"label": int(1)})    
-                img_name = item['image_filename'].split(".")[0]
-                data.append(img_name)         
+                else: # images which have one or more bounding box
+                    for vehicle in annotations:
+                        annot.append({"label": int(1)})    
+                    img_name = item['image_filename'].split(".")[0]
+                    data.append(img_name)         
 
-        return labels, annot, data
+        return labels, annot, data, original_splits
 
     def data_distribution_table(self):
         df = pd.DataFrame(self.annot)

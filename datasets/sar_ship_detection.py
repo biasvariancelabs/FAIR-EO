@@ -1,7 +1,6 @@
 import os
 import cv2
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import seaborn as sns
 import torch
@@ -84,18 +83,15 @@ class SARShipDetectionDataset(BaseObjectDetectionDataset):
         data = []
 
         ids = os.listdir(data_dir)
-        split_list = []
-        ids_final = []
-        if csv_file: 
-            with open(csv_file, mode ='r')as file:
-                csvFile = csv.reader(file)
-                for lines in csvFile:
-                    split_list.append(lines[0])
-            for i in ids:
-                i_csv = 'images/'+ i
-                if i_csv in split_list:
-                    ids_final.append(i)
-            ids = ids_final
+
+        if csv_file: # train/validation/test split
+            ids = []
+            with open(csv_file, "r", encoding="utf-8-sig") as f:
+                reader = csv.reader(f)
+                next(reader, None) # skip header
+                for row in reader:
+                    image_id = row[0].split('/')[1]
+                    ids.append(image_id)
             
         for img in ids:
             img_name = img[: img.rfind('.jpg')]
@@ -110,7 +106,6 @@ class SARShipDetectionDataset(BaseObjectDetectionDataset):
             labels = ["no-data","ship"]
             
             # box coordinates for txt files are extracted
-            
             for annotation in annot:
 
                 lines = annotation[:-1] #removes /n
