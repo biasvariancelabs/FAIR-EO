@@ -4,6 +4,7 @@ import pandas as pd
 import seaborn as sns
 import torch
 import numpy as np
+import csv
 
 from ..utils import image_loader
 from .schemas import FAIREOObjectDetectionYoloSchema
@@ -13,7 +14,8 @@ from .object_detection import BaseObjectDetectionDataset
 The OIRDS project has produced a dataset with almost 1,000 labeled images suitable for developing 
 automated vehicle detection algorithms. These images contain approximately 1,800 labeled targets.
 For each target, the OIRDS provides over 30 annotations and over 60 statistics that describe the 
-target within the context of the image.
+target within the context of the image. 
+Note: the different subsets correspond to different locations.
 '''
 
 class OIRDSDataset(BaseObjectDetectionDataset):
@@ -21,20 +23,14 @@ class OIRDSDataset(BaseObjectDetectionDataset):
     name = "OIRDS dataset"
     url = "https://sourceforge.net/projects/oirds/"
 
-    tasks = {'train': ['DataSet_1','DataSet_2','DataSet_3','DataSet_4','DataSet_5','DataSet_6','DataSet_7',
-                       'DataSet_8','DataSet_9','DataSet_10','DataSet_11','DataSet_12','DataSet_13','DataSet_14',
-                       'DataSet_15','DataSet_16'],
-            'val': ['DataSet_17','DataSet_18'],
-            'test': ['DataSet_19','DataSet_20']}
-
     def __init__(self, config):
         # now call the constructor to validate the schema
         super().__init__(config)
         self.data_dir = self.config.data_dir
         self.annotation_dir = self.config.annotation_dir
-        self.task = self.config.task
+        self.csv_file = self.config.csv_file
         self.labels, self.annotations, self.data = self.load_dataset(
-            self.data_dir, self.annotation_dir, self.task
+            self.data_dir, self.annotation_dir, self.csv_file
         )
 
 
@@ -53,7 +49,7 @@ class OIRDSDataset(BaseObjectDetectionDataset):
         img_h, img_w = image.shape[:2]
         dataset = img_path.split('/')[-2]
         file_name = img_path.split('/')[-1][: -4]
-        annotation = img_path[: img_path.rfind(file_name)]+'/DataSet'+dataset[dataset.rfind('_') :][1 :]+'.xls'
+        annotation = img_path[: img_path.rfind(file_name)] + '/DataSet' + dataset[dataset.rfind('_') :][1 :] + '.xls'
         
         df = pd.read_excel(annotation)
 
@@ -94,7 +90,6 @@ class OIRDSDataset(BaseObjectDetectionDataset):
                         labels.append(int(label_index))
                         boxes.append([xmin, ymin, xmax, ymax])
 
-
         boxes = torch.as_tensor(boxes, dtype=torch.float32)
 
         labels = torch.as_tensor(labels, dtype=torch.int64)
@@ -110,37 +105,47 @@ class OIRDSDataset(BaseObjectDetectionDataset):
         return self.apply_transformations(image, target)
 
 
-    def load_dataset(self, data_dir, annotation_dir, task):
-        annotations = []
-        data = []
+    def load_dataset(self, data_dir, annotation_dir, csv_file):
         labels = ["no-data","VEHICLE/CAR", "VEHICLE/PICK-UP", "VEHICLE/UNKNOWN", "VEHICLE/VAN", "VEHICLE/TRUCK"]
-        if task == None:
+
+        if csv_file == None:
+            data = []
+            annotations = []
             for i in os.listdir(data_dir):
-                dataset = data_dir+i
-                df = pd.read_excel(annotation_dir+i+'/'+i[: 7]+i[i.rfind('_') :][1 :]+'.xls')
+                dataset = data_dir + i
+                df = pd.read_excel(annotation_dir + i + '/' + i[: 7] + i[i.rfind('_') :][1 :] + '.xls')
 
                 for f in os.listdir(dataset):
                     if f.endswith(('.tif')):
-                        data.append(os.path.join(dataset,f))
+                        data.append(os.path.join(dataset, f))
 
                 for index, row in df.iterrows():
                     label_name = str(row["Mode of Target Type"])
                     label_index = labels.index(label_name)
                     annotations.append(label_index)
+            
+        # BVLabs provides csv files with a 60/20/20 split and a stratification based on subset/location 
+        elif csv_file: 
+            data = []
+            annotations = []
+            excel_cache = {}
+            with open(csv_file, "r", encoding="utf-8-sig") as f:
+                reader = csv.reader(f)
+                next(reader, None) # skip header
+                for img_id, subset in reader:
+                    data.append(os.path.join(data_dir, subset, img_id + ".tif"))
 
-        if task:
-            for i in self.tasks[task]:
-                dataset = data_dir+i
-                df = pd.read_excel(annotation_dir+i+'/'+i[: 7]+i[i.rfind('_') :][1 :]+'.xls')
+                    # cache excel file
+                    if subset not in excel_cache:
+                        excel_cache[subset] = pd.read_excel(os.path.join(annotation_dir, subset, subset[:7] + subset[subset.rfind("_") + 1 :] + ".xls"))
 
-                for f in os.listdir(dataset):
-                    if f.endswith(('.tif')):
-                        data.append(os.path.join(dataset,f))
+                    df = excel_cache[subset]
 
-                for index, row in df.iterrows():
-                    label_name = str(row["Mode of Target Type"])
-                    label_index = labels.index(label_name)
-                    annotations.append(label_index)
+                    for index, row in df.iterrows():
+                        if img_id == os.path.splitext(str(row["Image Name"]))[0]:
+                            label_name = str(row["Mode of Target Type"])
+                            label_index = labels.index(label_name)
+                            annotations.append(label_index)
 
         return labels, annotations, data
 

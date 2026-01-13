@@ -6,6 +6,7 @@ import torch
 import json
 import numpy as np
 import xml.etree.ElementTree as ET
+import csv
 
 from ..utils import image_loader
 from .schemas import FAIREOObjectDetectionYoloSchema
@@ -27,19 +28,22 @@ class RarePlanesDataset(BaseObjectDetectionDataset):
         # now call the constructor to validate the schema and split the data
         super().__init__(config)
         self.data_dir = self.config.data_dir
+        self.csv_file = self.config.csv_file
         self.annotation_dir = self.config.annotation_dir
-        self.annotations, self.ids = self.load_dataset(
-            self.data_dir, self.annotation_dir
+        self.task = self.config.task
+        self.annotations, self.data = self.load_dataset(
+            self.data_dir, self.annotation_dir, self.csv_file
         )
 
 
     def __getitem__(self, index):
-        img_name = self.ids[index]
-        image = image_loader(os.path.join(self.data_dir, f"{img_name}.png"))/255
+        img_name = self.data[index][0]
+        original_split = self.data[index][1]
+        image = image_loader(os.path.join(self.data_dir, original_split, 'PS-RGB_tiled', f"{img_name}.png")) / 255
         img_h, img_w = image.shape[:2]
 
-        #annotation file
-        annot_file_path = os.path.join(self.annotation_dir, f"{img_name}.geojson")
+        # annotation file
+        annot_file_path = os.path.join(self.data_dir, original_split, 'geojson_aircraft_tiled', f"{img_name}.geojson")
 
         boxes = []
         labels = []
@@ -52,7 +56,7 @@ class RarePlanesDataset(BaseObjectDetectionDataset):
             lon_coords = points_array[:, 0]  # All longitude values
             lat_coords = points_array[:, 1]  # All latitude values
 
-            xmin, ymin, xmax, ymax = self.convert_coords(img_name, lon_coords, lat_coords, img_w, img_h)
+            xmin, ymin, xmax, ymax = self.convert_coords(img_name, original_split, lon_coords, lat_coords, img_w, img_h)
 
             # Ensure the box is within image boundaries
             xmin, xmax = max(0, xmin), min(img_w, xmax)
@@ -75,25 +79,44 @@ class RarePlanesDataset(BaseObjectDetectionDataset):
         return self.apply_transformations(image, target)
 
 
-    def load_dataset(self, data_dir, annotation_dir):
+    def load_dataset(self, data_dir, annotation_dir, csv_file):
+        # original splits
+        if csv_file == None: 
+            data = []
+            split = self.task
+            annotation_dir = os.path.join(data_dir, split, 'geojson_aircraft_tiled')
+            ids = list(os.path.splitext(f)[0] for f in os.listdir(annotation_dir) if f.endswith('.geojson'))
+            for annot in ids:
+                data.append((annot, split))
+
+        # new 60/20/20 splits provided by BVLabs in csv files
+        if csv_file:
+            data = []
+            with open(csv_file, "r", encoding="utf-8-sig") as f:
+                reader = csv.reader(f)
+                next(reader, None) # skip header
+                for row in reader:
+                    image_id = row[0] 
+                    original_split = row[1]
+                    data.append((image_id, original_split))
+
         annotations = []
-        ids = list(os.path.splitext(f)[0] for f in os.listdir(annotation_dir) if f.endswith('.geojson'))
-        for annot in ids:
-            annot_path = os.path.join(annotation_dir, f'{annot}.geojson')
+        for annot in data:
+            annot_path = os.path.join(data_dir, annot[1], 'geojson_aircraft_tiled', f'{annot[0]}.geojson')
             with open(annot_path, "r") as f:
                 js = json.load(f)
             for feat in js["features"]:
                 annotations.append({"label": int(1)})
 
-        return annotations, ids
+        return annotations, data
     
     
-    def convert_coords(self, img_name, lon_coords, lat_coords, img_w, img_h):
+    def convert_coords(self, img_name, original_split, lon_coords, lat_coords, img_w, img_h):
         """
         Convert geographical coordinates to pixel coordinates
         """
         # Parse XML file
-        xml_path = os.path.join(self.data_dir, f'{img_name}.png.aux.xml')
+        xml_path = os.path.join(self.data_dir, original_split, 'PS-RGB_tiled', f'{img_name}.png.aux.xml')
         tree = ET.parse(xml_path)
 
         # Extract geotransform values

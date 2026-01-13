@@ -16,7 +16,7 @@ from .object_detection import BaseObjectDetectionDataset
 VALID stands for Virtual Aerial Image Dataset. It consits of 6690 high-resolution images, all annotated 
 with panoptic segmentation on 30 categories, object detection with the oriented bounding box, and binocular 
 depth maps, collected in 6 different virtual scenes and 5 various ambient conditions (sunny, dusk, night, 
-snow and fog). This subset considers the object detection task.
+snow and fog). This subset considers the object detection task with horizontal bounding boxes.
 '''
 
 
@@ -101,22 +101,20 @@ class VALIDObjectDetectionDataset(BaseObjectDetectionDataset):
         data = []
         file_names = []
         ids = []
-        for l in os.listdir(os.path.join(data_dir, "images")):
-            for k in os.listdir(os.path.join(data_dir, "images", l)):
-                for h in os.listdir(os.path.join(data_dir, "images", l, k)):
-                    ids.append(os.path.join(l,k,h))
+        for scene in os.listdir(os.path.join(data_dir, "images")):
+            for altitude in os.listdir(os.path.join(data_dir, "images", scene)):
+                for img_name in os.listdir(os.path.join(data_dir, "images", scene, altitude)):
+                    ids.append(os.path.join(scene, altitude, img_name))
         
-        split_list = []
-        ids_final = []
+        # BVLabs provides csv files with a 60/20/20 split and a stratification based on scene type and collection altitude 
         if csv_file: 
-            with open(csv_file, mode ='r')as file:
-                csvFile = csv.reader(file)
-                for lines in csvFile:
-                    split_list.append(lines[1]+'/'+lines[0])
-            for i in ids:
-                if i in split_list:
-                    ids_final.append(i)
-            ids = ids_final
+            ids = []
+            with open(csv_file, "r", encoding="utf-8-sig") as f:
+                reader = csv.reader(f)
+                next(reader, None) # skip header
+                for row in reader:
+                    scene, altitude, img_name = row[0], row[1], row[2]
+                    ids.append(os.path.join(scene, altitude, img_name))
 
         for json_file in os.listdir(annotation_dir):
             coco = json.load(open(annotation_dir+json_file, "r"))
