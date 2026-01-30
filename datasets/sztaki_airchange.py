@@ -79,18 +79,34 @@ class SZTAKIAirChangeDataset(BaseDataset):
                         self.images_pre.append(os.path.join(data_dir, aoi, tile, 'im1.bmp'))
                     else:
                         self.images_pre.append(os.path.join(data_dir, aoi, tile, 'im1.BMP'))
-                    self.images_post.append(os.path.join(data_dir, aoi, tile, 'im2.bmp'))
+                    if os.path.exists(os.path.join(data_dir, aoi, tile, 'im2.bmp')):
+                        self.images_post.append(os.path.join(data_dir, aoi, tile, 'im2.bmp'))
+                    else:
+                        self.images_post.append(os.path.join(data_dir, aoi, tile, 'im2.BMP'))
                     if os.path.exists(os.path.join(data_dir, aoi, tile, 'gt.bmp')):
                         self.annot.append(os.path.join(data_dir, aoi, tile, 'gt.bmp'))
                     else:
                         self.annot.append(os.path.join(data_dir, aoi, tile, 'gt.BMP'))
                 else:
                     if tile == 'im1.bmp':
-                        self.images_pre.append(os.path.join(data_dir, tile))
+                        self.images_pre.append(os.path.join(data_dir, aoi, tile))
                     elif tile == 'im2.bmp':
-                        self.images_post.append(os.path.join(data_dir, tile))
+                        self.images_post.append(os.path.join(data_dir, aoi, tile))
                     else:
-                        self.annot.append(os.path.join(data_dir, tile))
+                        self.annot.append(os.path.join(data_dir, aoi, tile))
+
+        if self.mode == 'train':
+            self.images_pre = self.images_pre[:8]
+            self.images_post = self.images_post[:8]
+            self.annot = self.annot[:8]
+        elif self.mode == 'val':
+            self.images_pre = self.images_pre[8:10]
+            self.images_post = self.images_post[8:10]
+            self.annot = self.annot[8:10]
+        elif self.mode == 'test':
+            self.images_pre = self.images_pre[10:12]
+            self.images_post = self.images_post[10:12]
+            self.annot = self.annot[10:12]
 
         return self.images_pre, self.images_post, self.annot
 

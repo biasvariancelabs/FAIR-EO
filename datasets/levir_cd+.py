@@ -4,8 +4,9 @@ import os
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.patches import Patch
+import csv
 
-from .semantic_segmentation import BaseDataset
+from .change_detection import ChangeDetectionDataset
 from .schemas import FAIREOSchema
 from ..utils import image_loader
 
@@ -15,46 +16,50 @@ LEVIR-CD+ is an extended version of the original LEVIR-CD dataset, designed for 
 change detection tasks in urban areas using remote sensing imagery.
 """
 
-class LEVIRCDPlusDataset(BaseDataset):
+class LEVIRCDPlusDataset(ChangeDetectionDataset):
 
     url = "https://drive.google.com/drive/folders/1lJ5GteQy5Z2LVayrKYZOn7_QPImlYP8C"
     name = "LEVIR-CD+"
     schema = FAIREOSchema
     labels = ["no change","building change"]
-    color_mapping =  [[0,0,0],[255, 255, 255]]
+    color_mapping = [[0,0,0],[255, 255, 255]]
 
 
     def __init__(self, config):
         # now call the constructor to validate the schema and split the data
         super().__init__(config)
         self.data_dir = self.config.data_dir
+        self.csv_file = self.config.csv_file
         self.mode = self.config.mode
         self.selection = self.config.selection
         self.data = self.load_dataset(self.data_dir)
 
     def __getitem__(self, index):
-        img_id = self.data[index]
+        if self.csv_file == None: # original train/test splits
+            img_id = self.data[index]
+            pre_image = image_loader(os.path.join(self.data_dir, 'A', f'{img_id}.png'))
+            post_image = image_loader(os.path.join(self.data_dir, 'B', f'{img_id}.png'))
+            mask = image_loader(os.path.join(self.data_dir, 'label', f'{img_id}.png'))
 
-        pre_image = image_loader(os.path.join(self.data_dir, 'A', f'{img_id}.png'))
-        # normalize image 
-        img_min, img_max = pre_image.min(), pre_image.max()
-        pre_image = (pre_image - img_min) / (img_max - img_min + 1e-8)
+        elif self.csv_file: # new 60/20/20 splits
+            img_id = self.data[index][0]
+            original_split = self.data[index][1]
+            pre_image = image_loader(os.path.join(self.data_dir, original_split, 'A', f'{img_id}.png'))
+            post_image = image_loader(os.path.join(self.data_dir, original_split, 'B', f'{img_id}.png'))
+            mask = image_loader(os.path.join(self.data_dir, original_split, 'label', f'{img_id}.png'))
 
-        post_image = image_loader(os.path.join(self.data_dir, 'B', f'{img_id}.png'))
-        # normalize image 
-        img_min, img_max = post_image.min(), post_image.max()
-        post_image = (post_image - img_min) / (img_max - img_min + 1e-8)
+        # normalize images
+        pre_image = (pre_image - pre_image.min()) / (pre_image.max() - pre_image.min() + 1e-8)
+        post_image = (post_image - post_image.min()) / (post_image.max() - post_image.min() + 1e-8)
 
-        mask = image_loader(os.path.join(self.data_dir, 'label', f'{img_id}.png'))
+        # translate the mask values from color code to integer
         single_band_mask = np.zeros([mask.shape[0], mask.shape[1]], np.uint8)
-    
         for i in np.arange(mask.shape[0]):
             for j in np.arange(mask.shape[1]):
                 if mask[i,j] == 0:
                     single_band_mask[i,j] = 0
                 elif mask[i,j] == 255:
                     single_band_mask[i,j] = 1
-        
         masks = [(single_band_mask == v) for v, label in enumerate(self.labels)]
         mask = np.stack(masks, axis=-1).astype("float32")
 
@@ -69,8 +74,18 @@ class LEVIRCDPlusDataset(BaseDataset):
 
     def load_dataset(self, data_dir):
         self.data = []
-        for id in os.listdir(os.path.join(data_dir, 'A')):
-            self.data.append(id[: -4])
+        if self.csv_file == None: # original train/test splits
+            for id in os.listdir(os.path.join(data_dir, 'A')):
+                self.data.append(id[: -4])
+
+        elif self.csv_file: # new 60/20/20 train/val/test splits provided by BVLabs
+            with open(self.csv_file, "r", encoding="utf-8-sig") as f:
+                reader = csv.reader(f)
+                next(reader, None) # skip header
+                for row in reader:
+                    img_id = row[0] 
+                    original_split = row[1]
+                    self.data.append((img_id, original_split))
 
         return self.data
 

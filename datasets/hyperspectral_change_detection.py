@@ -7,7 +7,7 @@ from matplotlib.patches import Patch
 import scipy.io
 
 from .semantic_segmentation import BaseDataset
-from .schemas import FAIREOSchema
+from .schemas import MultilabelChangeDetectionSchema
 from ..utils import image_loader
 
 
@@ -25,7 +25,7 @@ class HyperspectralChangeDetectionDataset(BaseDataset):
 
     url = "https://gitlab.citius.usc.es/hiperespectral/ChangeDetectionDataset"
     name = "Hyperspectral Change Detection"
-    schema = FAIREOSchema
+    schema = MultilabelChangeDetectionSchema
     labels = ["no change","type 1","type 2","type 3","type 4","type 5"]
     color_mapping =  [[0,0,0],[0,255,255],[255,0,255],[0,0,255],[255,255,0],[192,192,192]]
 
@@ -34,6 +34,7 @@ class HyperspectralChangeDetectionDataset(BaseDataset):
         # now call the constructor to validate the schema and split the data
         super().__init__(config)
         self.data_dir = self.config.data_dir
+        self.task_type = self.config.task_type
         self.mode = self.config.mode
         self.selection = self.config.selection
         self.data = self.load_dataset(self.data_dir)
@@ -53,9 +54,18 @@ class HyperspectralChangeDetectionDataset(BaseDataset):
         post_img_min, post_img_max = post_image.min(), post_image.max()
         post_image = (post_image - post_img_min) / (post_img_max - post_img_min + 1e-8)
 
+        # multilabel mask
         mask = self.data[index][1]
         masks = [(mask == v) for v, label in enumerate(self.labels)]
         mask = np.stack(masks, axis=-1).astype("float32")
+
+        # binary mask
+        if self.task_type == "binary":
+            self.labels = ["no-change","change"]
+            self.color_mapping = [[0,0,0],[255,255,255]]
+            mask = self.data[index][1]
+            masks = [(mask == v) for v, label in enumerate(self.labels)]
+            mask = np.stack(masks, axis=-1).astype("float32")
 
         if self.transform:
             pre_image = self.transform(pre_image)
@@ -104,6 +114,13 @@ class HyperspectralChangeDetectionDataset(BaseDataset):
         gt = mat_data['gt5clasesHermiston']
 
         self.data.append(((im1, im2), gt))
+
+        if self.mode == "train":
+            self.data = [self.data[0]]
+        elif self.mode == "val":
+            self.data = [self.data[1]]
+        elif self.mode == "test":
+            self.data = [self.data[2]]
 
         return self.data
 

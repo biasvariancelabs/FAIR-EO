@@ -269,3 +269,123 @@ class SSL4EOS12MLSchema(BaseDatasetSchema):
     imagery = fields.String(
         missing="S2 L2A", description="read S1, S2 L1C and S2 L2A imagery or one source only", example="S2 L1C/S2 L2A/S1/all"
     )
+
+class DFC21DSESchema(BaseDatasetSchema):
+    """
+    Schema for configuring DFC21-DSE datasets.
+    """
+    csv_file = fields.String(
+        missing=None, description="CSV file on disk", example="./data/train.csv"
+    )
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/CESBIO/"
+    )
+    selection = fields.String(
+        missing="rgb", description="Read RGB channels or more than 3 channels", example="all/rgb"
+    )
+    time_series = fields.Boolean(
+        missing=False, description="Consider the time series or a single time step", example="True"
+    )
+    imagery = fields.String(
+        missing="s2", description="Read S1, S2, Landsat 8 or VIIRS images", example="s1/s2/l8/viirs"
+    )
+
+class WHUOPTSARSchema(BaseDatasetSchema):
+    """
+    Schema for configuring WHU-OPT-SAR dataset.
+    """
+    csv_file = fields.String(
+        missing=None, description="CSV file on disk", example="./data/train.csv"
+    )
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/CESBIO/"
+    )
+    selection = fields.String(
+        missing="rgb", description="Read RGB channels or more than 3 channels", example="all/rgb"
+    )
+    imagery = fields.String(
+        missing="s2", description="Consider s1, s2 or both s1 and s2 images", example="s1/s2/s1 and s2"
+    )
+
+class MultilabelChangeDetectionSchema(BaseDatasetSchema):
+    """
+    Schema for configuring Change Detection datasets with multilabel masks.
+    """
+    csv_file = fields.String(
+        missing=None, description="CSV file on disk", example="./data/train.csv"
+    )
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/CESBIO/"
+    )
+    selection = fields.String(
+        missing="rgb", description="Read RGB channels or more than 3 channels", example="all/rgb"
+    )
+    mode = fields.String(
+        missing=None, description="train/val or test task", example="train"
+    )
+    task_type = fields.String(
+        missing="multilabel", description="binary or multilabel", example="binary"
+    )
+
+class BandonSchema(BaseDatasetSchema):
+    """
+    Schema for configuring Bandon dataset.
+    """
+    csv_file = fields.String(
+        missing=None, description="CSV file on disk", example="./data/train.csv"
+    )
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/CESBIO/"
+    )
+    selection = fields.String(
+        missing="rgb", description="Read RGB channels or more than 3 channels", example="all/rgb"
+    )
+    mode = fields.String(
+        missing=None, description="train/val or test task", example="train"
+    )
+    split = fields.String(
+        missing="original", description="original or new 60/20/20 split", example="new"
+    )
+
+class MSBCSchema(BaseDatasetSchema):
+    """
+    Schema for configuring MSBC dataset.
+    """
+    csv_file = fields.String(
+        missing=None, description="CSV file on disk", example="./data/train.csv"
+    )
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/CESBIO/"
+    )
+    selection = fields.String(
+        missing="rgb", description="Read RGB channels or more than 3 channels", example="all/rgb"
+    )
+    mode = fields.String(
+        missing=None, description="train/val or test task", example="train"
+    )
+    imagery = fields.String(
+        missing="s2", description="Consider only one of s1, s2, aerial or all sources", example="s1/s2/aerial/all"
+    )
+
+class SMARSSchema(BaseDatasetSchema):
+    """
+    Schema for configuring the SMARS dataset.
+    """
+    csv_file = fields.String(
+        missing=None, description="CSV file on disk", example="./data/train.csv"
+    )
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/CESBIO/"
+    )
+    selection = fields.String(
+        missing="rgb", description="Read RGB channels or more than 3 channels", example="all/rgb"
+    )
+    mode = fields.String(
+        missing=None, description="train/val or test task", example="train"
+    )
+    imagery = fields.String(
+        missing="rgb", description="Consider only RGB, DEM or both sources", example="rgb/dem/all"
+    )
+    task_type = fields.String(
+        missing="multilabel", description="binary or multilabel", example="binary"
+    )

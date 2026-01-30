@@ -4,6 +4,7 @@ import os
 import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.patches import Patch
+import csv
 
 from .semantic_segmentation import BaseDataset
 from ..utils import image_loader
@@ -22,7 +23,7 @@ class AICDDataset(BaseDataset):
     name = "AICD"
     schema = FAIREOSchema
     labels = ["no change","change"]
-    color_mapping =  [[0,0,0],[255, 255, 255]]
+    color_mapping =  [[0,0,0],[255,255,255]]
 
 
     def __init__(self, config):
@@ -31,19 +32,21 @@ class AICDDataset(BaseDataset):
         self.data_dir = self.config.data_dir
         self.mode = self.config.mode
         self.selection = self.config.selection
-        self.data = self.load_dataset(self.data_dir)
+        self.csv_file = self.config.csv_file
+        self.data = self.load_dataset(self.data_dir, self.csv_file)
 
     def __getitem__(self, index):
         img_id = self.data[index]
 
+        # images are available with or without shadows
         if self.selection == 'shadows':
-            pre_image = image_loader(os.path.join(self.data_dir, 'Images_Shadows', f'{img_id}_target.png'))
-            post_image = image_loader(os.path.join(self.data_dir, 'Images_Shadows', f'{img_id}_moving.png'))
+            pre_image = image_loader(os.path.join(self.data_dir, 'Images_Shadows', f'{img_id}_target.png'))[:,:,:3]
+            post_image = image_loader(os.path.join(self.data_dir, 'Images_Shadows', f'{img_id}_moving.png'))[:,:,:3]
         elif self.selection == 'no shadows':
-            pre_image = image_loader(os.path.join(self.data_dir, 'Images_NoShadows', f'{img_id}_target.png'))
-            post_image = image_loader(os.path.join(self.data_dir, 'Images_NoShadows', f'{img_id}_moving.png'))
+            pre_image = image_loader(os.path.join(self.data_dir, 'Images_NoShadows', f'{img_id}_target.png'))[:,:,:3]
+            post_image = image_loader(os.path.join(self.data_dir, 'Images_NoShadows', f'{img_id}_moving.png'))[:,:,:3]
 
-        #normalize image for better visualization
+        # normalize image for better visualization
         img_min, img_max = pre_image.min(), pre_image.max()
         pre_image = (pre_image - img_min) / (img_max - img_min + 1e-8)
 
@@ -80,10 +83,19 @@ class AICDDataset(BaseDataset):
         return (pre_image, post_image), mask
 
 
-    def load_dataset(self, data_dir):
+    def load_dataset(self, data_dir, csv_file):
         self.data = []
         for id in os.listdir(os.path.join(data_dir, 'GroundTruth')):
             self.data.append(id[: -11])
+
+        if csv_file: # train/validation/test split
+            self.data = []
+            with open(csv_file, "r", encoding="utf-8-sig") as f:
+                reader = csv.reader(f)
+                for row in reader:
+                    file_name = row[0].split('/')[1]
+                    base_name = file_name[: -11]
+                    self.data.append(base_name)
 
         return self.data
 
