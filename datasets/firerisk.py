@@ -53,14 +53,30 @@ class FireRiskDataset(BaseDataset):
 
     def load_dataset(self, data_dir):
         data = []
-        for labels in os.listdir(data_dir):
-            for j in os.listdir(data_dir + labels):
-                file_name = labels + '/' + j
-                item = (
-                    os.path.join(self.data_dir, file_name),
-                    self.labels.index(labels),
-                )
-                data.append(item)
+        # the dataset is originally split into 80/20 train/test split
+        # csv_files created by BVLabs provide a 60/20/20 train/val/test split with a stratification based on class
+        if self.csv_file:
+            with open(self.csv_file, "r") as f:
+                    reader = csv.reader(f)
+                    next(reader, None) # skip header
+                    for row in reader:
+                        file_name = os.path.join(row[1], row[0])
+                        label = row[2] 
+                        item = (
+                            os.path.join(self.data_dir, file_name),
+                            self.labels.index(label),            
+                        )
+                        data.append(item)
+
+        else: # original split
+            for labels in os.listdir(data_dir):
+                for j in os.listdir(data_dir + labels):
+                    file_name = labels + '/' + j
+                    item = (
+                        os.path.join(self.data_dir, file_name),
+                        self.labels.index(labels),
+                    )
+                    data.append(item)
 
         if not self.labels:
             raise ValueError("You need to provide the list of labels for the dataset")
@@ -122,4 +138,3 @@ class FireRiskDataset(BaseDataset):
             axes.set_yticks([])
         figure.tight_layout()
         return figure
-
