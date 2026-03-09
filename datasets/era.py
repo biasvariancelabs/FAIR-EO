@@ -53,20 +53,36 @@ class ERADataset(MultiClassClassificationDataset):
 
     def load_dataset(self):
         data = []
+        # the data is originally split into about 50/50 train and test splits 
+        # csv_files created by BVLabs give a 60/20/20 train/val/test split stratified based on class values
+        if self.csv_file: 
+            with open(self.csv_file, "r") as f:
+                    reader = csv.reader(f)
+                    next(reader, None) # skip header
+                    for row in reader:
+                        file_name = os.path.join(row[1], row[0])
+                        label = row[2] 
 
-        for label in os.listdir(self.data_dir):
-            for file_name in os.listdir(os.path.join(self.data_dir,label)):
-                item = (
-                    os.path.join(self.data_dir, label, file_name),
-                    self.labels.index(label),
-                )
-                data.append(item)
+                        item = (
+                            os.path.join(self.data_dir, file_name),
+                            self.labels.index(label),            
+                        )
+                        data.append(item)
+
+        else: # original split
+            for label in os.listdir(self.data_dir):
+                for file_name in os.listdir(os.path.join(self.data_dir,label)):
+                    item = (
+                        os.path.join(self.data_dir, label, file_name),
+                        self.labels.index(label),
+                    )
+                    data.append(item)
 
         if not self.labels:
             raise ValueError("You need to provide the list of labels for the dataset")
 
         return data
-
+    
     def data_distribution_table(self):
         df = pd.DataFrame(columns=['File name','Label'])
         for i in np.arange(len(self.data)):
