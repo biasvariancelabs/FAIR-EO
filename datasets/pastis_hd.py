@@ -34,7 +34,7 @@ class PASTISHDDataset(SemanticSegmentationDataset):
         "Beet",
         "Winter triticale",
         "Winter durum wheat",
-        "Fruits, vegetables, flowers",
+        "Fruits vegetables flowers",
         "Potatoes",
         "Leguminous fodder",
         "Soybeans",
