@@ -1,6 +1,7 @@
 from ..base import BaseDataset
 from ..utils import image_loader
 from .schemas import BrazilDAMSchema
+
 import pandas as pd
 import csv
 import os
@@ -31,6 +32,9 @@ class BrazilDAMDataset(BaseDataset):
         self.data_dir = self.config.data_dir
         self.csv_file = self.config.csv_file
         self.imagery = self.config.imagery
+        self.selection = self.config.selection
+        self.bands_s2 = self.config.bands_s2
+        self.bands_l8 = self.config.bands_l8
         self.data = self.load_dataset()
 
     def __getitem__(self, index):
@@ -41,51 +45,116 @@ class BrazilDAMDataset(BaseDataset):
         :rtype: tuple (image, target)
 
         """
-        # load image
-        img = image_loader(self.data[index][0])
-        img = img[:,:,1:4]
-        # normalize the image for better visualization
-        img_min, img_max = img.min(), img.max()
-        img = (img - img_min) / (img_max - img_min + 1e-8)
 
+        # considering only Sentinel-2 or unpaired Sentinel-2 and Landsat 8
+        if self.imagery == 'sentinel' or self.imagery == 'sentinel and landsat unpaired':
+            img = image_loader(self.data[index][0][0])
+            satellite = self.data[index][1]
+            if satellite == "sentinel": 
+                if self.selection == "rgb":
+                    img = img[:,:,1:4]
+                elif self.selection == "bands": # the config must contain a self.bands field with a list of chosen bands
+                    idx = []
+                    s2_bands = ["B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B10","B11","B12"]
+                    for b in self.bands_s2:
+                        if b not in s2_bands:
+                            print("The bands must be valid Sentinel-2 bands, i.e. one of B01, B02, B03, B04, B05, B06, B07, B08, B8A, B09, B10, B11, B12")
+                            break
+                        else:
+                            idx.append(s2_bands.index(b))
+                    img = img[:,:,idx]
+
+            elif satellite == "landsat": 
+                if self.selection == "rgb":
+                    img = img[:,:,1:4]
+                elif self.selection == "bands": 
+                    idx = []
+                    l8_bands = ["B01","B02","B03","B04","B05","B06","B07","B08","B09","B10","B11"]
+                    for b in self.bands_l8:
+                        if b not in l8_bands:
+                            print("The bands must be valid Landsat 8 bands, i.e. one of B01, B02, B03, B04, B05, B06, B07, B08, B09, B10, B11")
+                            break
+                        else:
+                            idx.append(l8_bands.index(b))
+                    img = img[:,:,idx]
+
+            # normalize the image
+            img_min, img_max = img.min(), img.max()
+            img = (img - img_min) / (img_max - img_min + 1e-8)
+
+        # considering S2 and L8 pairs where available
+        if self.imagery == 'sentinel and landsat paired':
+            s2_img = image_loader(os.path.join(self.data_dir, "sentinel", self.data[index][0][0]))
+            if self.selection == "rgb":
+                s2_img = s2_img[:,:,1:4]
+            elif self.selection == "bands":
+                idx = []
+                s2_bands = ["B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B10","B11","B12"]
+                for b in self.bands_s2:
+                    if b not in s2_bands:
+                        print("The bands must be valid Sentinel-2 bands, i.e. one of B01, B02, B03, B04, B05, B06, B07, B08, B8A, B09, B10, B11, B12")
+                        break
+                    else:
+                        idx.append(s2_bands.index(b))
+                s2_img = s2_img[:,:,idx]
+            s2_img = (s2_img - s2_img.min()) / (s2_img.max() - s2_img.min() + 1e-8) # normalize image
+
+            l8_img = image_loader(os.path.join(self.data_dir, "landsat", self.data[index][0][0]))
+            if self.selection == "rgb":
+                l8_img = l8_img[:,:,1:4]
+            elif self.selection == "bands": 
+                idx = []
+                l8_bands = ["B01","B02","B03","B04","B05","B06","B07","B08","B09","B10","B11"]
+                for b in self.bands_l8:
+                    if b not in l8_bands:
+                        print("The bands must be valid Landsat 8 bands, i.e. one of B01, B02, B03, B04, B05, B06, B07, B08, B09, B10, B11")
+                        break
+                    else:
+                        idx.append(l8_bands.index(b))
+                l8_img = l8_img[:,:,idx]
+            l8_img = (l8_img - l8_img.min()) / (l8_img.max() - l8_img.min() + 1e-8)
+
+            img = np.dstack((s2_img, l8_img))
+        
         # apply transformations
         if self.transform:
             img = self.transform(img)
-        target = self.data[index][1]
+        target = self.data[index][0][1]
         if self.target_transform:
             target = self.target_transform(target)
         return img, target
     
     def load_dataset(self):
         data = []
-        if self.csv_file:
-            if self.imagery == 'sentinel':
-                with open(self.csv_file, "r") as f:
-                    csv_reader = csv.reader(f)
-                    raw_data = list(csv_reader)
+        if self.csv_file: # csv file created by BVLabs provide a 60/20/20 split with a stratification based on satellite, class and year
+            with open(self.csv_file, "r") as f:
+                csv_reader = csv.reader(f)
+                raw_data = list(csv_reader)
 
-                    for index, row in enumerate(raw_data):
-                        file_name = row[0]
+                for row in raw_data[1:]:
+                    file_name = row[0]
+                    satellite = row[1]
+                    label = row[2]
+                    year = row[3]
 
-                        item = (
-                            os.path.join(self.data_dir, row[1], file_name),
-                            self.labels.index(row[0].split('/')[0]),
-                        )
-                        data.append(item)
+                    item = (
+                        os.path.join(self.data_dir, satellite, year, file_name),
+                        self.labels.index(label),
+                    )
 
-            elif self.imagery == 'sentinel and landsat':
-                with open(self.csv_file, "r") as f:
-                    csv_reader = csv.reader(f)
-                    raw_data = list(csv_reader)
-
-                    for row in raw_data[1:]:
-                        file_name = os.path.join(row[1], row[3], row[0]) # satellite, year, file name
-
-                        item = (
-                            os.path.join(self.data_dir, file_name),
-                            self.labels.index(row[2]),
-                        )
-                        data.append(item)
+                    if self.imagery == 'sentinel':
+                        if satellite == "sentinel":
+                            data.append((item, satellite))
+                    elif self.imagery == 'sentinel and landsat unpaired':
+                        data.append((item, satellite))
+                    elif self.imagery == 'sentinel and landsat paired':
+                        if satellite == "sentinel": # both S2 and L8 have the same file_name if belonging to the same pair
+                            if os.path.exists(os.path.join(self.data_dir, "landsat", year, file_name)): # not all S2 have a corresponding L8
+                                item = (
+                                    os.path.join(year, file_name),
+                                    self.labels.index(label),
+                                )
+                                data.append((item, satellite))
 
         if not self.labels:
             raise ValueError("You need to provide the list of labels for the dataset")
@@ -121,14 +190,41 @@ class BrazilDAMDataset(BaseDataset):
         return fig
 
     def show_image(self, index):
-        label = self.labels[self[index][1]]
-        fig = plt.figure(figsize=(8, 6))
-        plt.title(
-            f"Image with index {index} from the dataset {self.get_name()}, with label {label}\n",
-            fontsize=14,
-        )
-        plt.axis("off")
-        plt.imshow(self[index][0])
+        if self.selection != 'rgb':
+            print('The selection parameter must be set to rgb for image visualization')
+
+        if self.imagery == 'sentinel' or self.imagery == 'sentinel and landsat unpaired':
+            label = self.labels[self[index][1]]
+            fig = plt.figure(figsize=(8, 6))
+            plt.title(
+                f"Image with index {index} from the dataset {self.get_name()}, with label {label}\n",
+                fontsize=14,
+            )
+            plt.axis("off")
+            plt.imshow(self[index][0])
+
+        elif self.imagery == 'sentinel and landsat paired':    
+            s2_img = self[index][0][:,:,:3]
+            l8_img = self[index][0][:,:,3:]
+            label = self.labels[self[index][1]]
+
+            fig, axs = plt.subplots(1, 2, figsize=(16, 6))
+
+            axs[0].imshow(s2_img)
+            axs[0].set_title("S2 image", fontsize=16)
+            axs[0].axis("off")
+
+            axs[1].imshow(l8_img)
+            axs[1].set_title(f"L8 image", fontsize=16)
+            axs[1].axis("off")
+
+            fig.suptitle(
+                f"Image with index {index} from the dataset {self.get_name()}, with label {label}\n",
+                fontsize=20,
+                y=1.05
+            )
+            plt.tight_layout()
+
         return fig
     
     def show_batch(self, size, show_title=True):

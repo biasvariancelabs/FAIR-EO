@@ -13,6 +13,7 @@ import math
 import os
 import csv
 import json
+from skimage.transform import resize
 
 '''
 SSL4EO-S12-ML dataset is a large-scale multi-label land cover land use classification dataset derived from 
@@ -42,6 +43,8 @@ class SSL4EOS12MLDataset(BaseDataset):
         self.label_file = self.config.label_file
         self.selection = self.config.selection
         self.imagery = self.config.imagery
+        self.bands_s2 = self.config.bands_s2
+        self.bands_s1 = self.config.bands_s1
         self.images = self.load_dataset(self.data_dir, self.label_file)
 
     def __getitem__(self, index):
@@ -61,21 +64,47 @@ class SSL4EOS12MLDataset(BaseDataset):
             b04 = self.image_loader(os.path.join(img_path, 'B4.tif'))
             s2c_image = np.stack((b02,b03,b04))
         elif self.selection == 'all':
-            b01 = self.image_loader(os.path.join(img_path, 'B1.tif'))
-            b02 = self.image_loader(os.path.join(img_path, 'B2.tif'))
-            b03 = self.image_loader(os.path.join(img_path, 'B3.tif'))
-            b04 = self.image_loader(os.path.join(img_path, 'B4.tif'))
-            b05 = self.image_loader(os.path.join(img_path, 'B5.tif'))
-            b06 = self.image_loader(os.path.join(img_path, 'B6.tif'))
-            b07 = self.image_loader(os.path.join(img_path, 'B7.tif'))
-            b08 = self.image_loader(os.path.join(img_path, 'B8.tif'))
-            b8a = self.image_loader(os.path.join(img_path, 'B8A.tif'))
-            b09 = self.image_loader(os.path.join(img_path, 'B9.tif'))
-            b10 = self.image_loader(os.path.join(img_path, 'B10.tif'))
-            b11 = self.image_loader(os.path.join(img_path, 'B11.tif'))
-            b12 = self.image_loader(os.path.join(img_path, 'B12.tif'))
-            s2c_image = np.stack((b01,b02,b03,b04,b05,b06,b07,b08,b8a,b09,b10,b11,b12))
-        # normalize image for better visualization
+            band_filenames = {
+                "B01": "B1.tif",  "B02": "B2.tif",  "B03": "B3.tif",
+                "B04": "B4.tif",  "B05": "B5.tif",  "B06": "B6.tif",
+                "B07": "B7.tif",  "B08": "B8.tif",  "B8A": "B8A.tif",
+                "B09": "B9.tif",  "B10": "B10.tif", "B11": "B11.tif",
+                "B12": "B12.tif"
+            }
+            # Load a 10m band as reference shape to resize images (all images must have the same shape for stacking)
+            reference = self.image_loader(os.path.join(img_path, "B2.tif"))
+            target_shape = reference.shape
+            loaded_bands = []
+            for filename in band_filenames.values():
+                arr = self.image_loader(os.path.join(img_path, filename))
+                if arr.shape != target_shape:
+                    arr = resize(arr, target_shape, order=1, preserve_range=True).astype(arr.dtype)
+                loaded_bands.append(arr)
+            s2c_image = np.stack(loaded_bands)
+        elif self.selection == 'bands':
+            s2_bands = ["B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B10","B11","B12"] # all 13 accepted s2 bands
+            band_filenames = {
+                "B01": "B1.tif",  "B02": "B2.tif",  "B03": "B3.tif",
+                "B04": "B4.tif",  "B05": "B5.tif",  "B06": "B6.tif",
+                "B07": "B7.tif",  "B08": "B8.tif",  "B8A": "B8A.tif",
+                "B09": "B9.tif",  "B10": "B10.tif", "B11": "B11.tif",
+                "B12": "B12.tif"
+            }
+            for band in self.bands_s2:
+                if band not in s2_bands:
+                    print("The bands must be valid Sentinel-2 bands, i.e. one of B01, B02, B03, B04, B05, B06, B07, B08, B8A, B09, B10, B11, B12")
+                    break  
+            # Load a 10m band as reference shape to resize images
+            reference = self.image_loader(os.path.join(img_path, "B2.tif")) 
+            target_shape = reference.shape
+            loaded_bands = []
+            for band in self.bands_s2:
+                arr = self.image_loader(os.path.join(img_path, band_filenames[band]))
+                if arr.shape != target_shape:
+                    arr = resize(arr, target_shape, order=1, preserve_range=True).astype(arr.dtype)
+                loaded_bands.append(arr)
+            s2c_image = np.stack(loaded_bands)
+        # normalize image 
         img_min, img_max = s2c_image.min(), s2c_image.max()
         s2c_image = (s2c_image - img_min) / (img_max - img_min + 1e-8)
 
@@ -89,20 +118,46 @@ class SSL4EOS12MLDataset(BaseDataset):
                 b04 = self.image_loader(os.path.join(img_path, 'B4.tif'))
                 s2a_image = np.stack((b02,b03,b04))
             elif self.selection == 'all':
-                b01 = self.image_loader(os.path.join(img_path, 'B1.tif'))
-                b02 = self.image_loader(os.path.join(img_path, 'B2.tif'))
-                b03 = self.image_loader(os.path.join(img_path, 'B3.tif'))
-                b04 = self.image_loader(os.path.join(img_path, 'B4.tif'))
-                b05 = self.image_loader(os.path.join(img_path, 'B5.tif'))
-                b06 = self.image_loader(os.path.join(img_path, 'B6.tif'))
-                b07 = self.image_loader(os.path.join(img_path, 'B7.tif'))
-                b08 = self.image_loader(os.path.join(img_path, 'B8.tif'))
-                b8a = self.image_loader(os.path.join(img_path, 'B8A.tif'))
-                b09 = self.image_loader(os.path.join(img_path, 'B9.tif'))
-                b10 = self.image_loader(os.path.join(img_path, 'B10.tif'))
-                b11 = self.image_loader(os.path.join(img_path, 'B11.tif'))
-                b12 = self.image_loader(os.path.join(img_path, 'B12.tif'))
-                s2a_image = np.stack((b01,b02,b03,b04,b05,b06,b07,b08,b8a,b09,b10,b11,b12))
+                band_filenames = {
+                    "B01": "B1.tif",  "B02": "B2.tif",  "B03": "B3.tif",
+                    "B04": "B4.tif",  "B05": "B5.tif",  "B06": "B6.tif",
+                    "B07": "B7.tif",  "B08": "B8.tif",  "B8A": "B8A.tif",
+                    "B09": "B9.tif",  "B10": "B10.tif", "B11": "B11.tif",
+                    "B12": "B12.tif"
+                }
+                # Load a 10m band as reference shape to resize images 
+                reference = self.image_loader(os.path.join(img_path, "B2.tif"))
+                target_shape = reference.shape
+                loaded_bands = []
+                for filename in band_filenames.values():
+                    arr = self.image_loader(os.path.join(img_path, filename))
+                    if arr.shape != target_shape:
+                        arr = resize(arr, target_shape, order=1, preserve_range=True).astype(arr.dtype)
+                    loaded_bands.append(arr)
+                s2a_image = np.stack(loaded_bands)
+            elif self.selection == 'bands':
+                s2_bands = ["B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B10","B11","B12"] 
+                band_filenames = {
+                    "B01": "B1.tif",  "B02": "B2.tif",  "B03": "B3.tif",
+                    "B04": "B4.tif",  "B05": "B5.tif",  "B06": "B6.tif",
+                    "B07": "B7.tif",  "B08": "B8.tif",  "B8A": "B8A.tif",
+                    "B09": "B9.tif",  "B10": "B10.tif", "B11": "B11.tif",
+                    "B12": "B12.tif"
+                }
+                for band in self.bands_s2:
+                    if band not in s2_bands:
+                        print("The bands must be valid Sentinel-2 bands, i.e. one of B01, B02, B03, B04, B05, B06, B07, B08, B8A, B09, B10, B11, B12")
+                        break
+                # Load a 10m band as reference shape to resize images
+                reference = self.image_loader(os.path.join(img_path, "B2.tif")) 
+                target_shape = reference.shape
+                loaded_bands = []
+                for band in self.bands_s2:
+                    arr = self.image_loader(os.path.join(img_path, band_filenames[band]))
+                    if arr.shape != target_shape:
+                        arr = resize(arr, target_shape, order=1, preserve_range=True).astype(arr.dtype)
+                    loaded_bands.append(arr)
+                s2a_image = np.stack(loaded_bands)
             # normalize image
             img_min, img_max = s2a_image.min(), s2a_image.max()
             s2a_image = (s2a_image - img_min) / (img_max - img_min + 1e-8)
@@ -112,10 +167,19 @@ class SSL4EOS12MLDataset(BaseDataset):
         # Sentinel-1
         if os.path.exists(os.path.join(self.data_dir, 's1/s1', self.images[index][0])):
             img_path = os.path.join(self.data_dir, 's1/s1', self.images[index][0])
-            vh = self.image_loader(os.path.join(img_path, 'VH.tif'))
-            vv = self.image_loader(os.path.join(img_path, 'VV.tif'))
-            vh_vv = np.array(vh/vv)
-            s1_image = np.stack((vh,vv,vh_vv))
+            if self.selection == 'rgb':
+                vv = self.image_loader(os.path.join(img_path, 'VV.tif'))
+                vh = self.image_loader(os.path.join(img_path, 'VH.tif'))
+                vv_vh = np.array(vv/vh)
+                s1_image = np.stack((vh,vv,vv_vh))
+            elif self.selection == 'bands':
+                s1_bands = ["VV","VH"]
+                for band in self.bands_s1:
+                    if band not in s1_bands:
+                        print("The bands must be valid Sentinel-1 bands, i.e. one of VV and VH")
+                        break
+                loaded_bands = [self.image_loader(os.path.join(img_path, band_filenames[band])) for band in self.bands_s1]
+                s1_image = np.stack(loaded_bands)
             # normalize image
             img_min, img_max = s1_image.min(), s1_image.max()
             s1_image = (s1_image - img_min) / (img_max - img_min + 1e-8)
