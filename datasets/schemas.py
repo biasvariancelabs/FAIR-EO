@@ -404,3 +404,29 @@ class SMARSSchema(BaseDatasetSchema):
     task_type = fields.String(
         missing="multilabel", description="binary or multilabel", example="binary"
     )
+
+class TallosSchema(BaseDatasetSchema):
+    """
+    Schema for configuring the TalloS dataset.
+    """
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/BigEarthNet/"
+    )
+    csv_file = fields.String(
+        missing=None, description="CSV file on disk", example="./data/train.csv",
+    )
+    annotations = fields.String(
+        missing="/", description="Annotation file on disk", example="./data/annotations.csv",
+    )
+    task = fields.String(
+        missing=None, description="Training, validation or testing task", example="val",
+    )
+    selection = fields.String(
+        missing="rgb", description="Select 3 bands RGB images, specific bands or all bands", example="rgb/bands/all",
+    )
+    imagery = fields.String(
+        missing="sentinel2", description="Select S2 or DEM", example="dem",
+    )
+    bands = fields.List(
+        fields.String(), missing=None, description="Select which S2 bands to use with a list of band names", example=["B01","B02","B03"]
+    )
