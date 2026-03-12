@@ -2,9 +2,10 @@ import numpy as np
 import os
 import pandas as pd
 import csv
+
 from .semantic_segmentation import SemanticSegmentationDataset
 from ..utils import image_loader
-from .schemas import FAIREOSchema
+from .schemas import Sentinel2CloudCoverSchema
 
 """
 This dataset was generated as part of a crowdsourcing competition. The dataset consists of Sentinel-2 
@@ -19,7 +20,7 @@ class Sentinel2CloudCoverSegmentationDataset(SemanticSegmentationDataset):
     labels = ["no clouds","clouds"]
     color_mapping = [[0,0,0],[255,255,255]] 
     name = "Sentinel-2 Cloud Cover Segmentation Dataset"
-    schema = FAIREOSchema
+    schema = Sentinel2CloudCoverSchema
 
     def __init__(self, config):
         # now call the constructor to validate the schema and split the data
@@ -27,16 +28,30 @@ class Sentinel2CloudCoverSegmentationDataset(SemanticSegmentationDataset):
         self.data_dir = self.config.data_dir
         self.selection = self.config.selection
         self.csv_file = self.config.csv_file
+        self.bands = self.config.bands
 
     def __getitem__(self, index):
         imageB02 = image_loader(self.images_B02[index])
         imageB03 = image_loader(self.images_B03[index])
         imageB04 = image_loader(self.images_B04[index])
-        image = np.dstack((imageB02,imageB03,imageB04))/5000
+        imageB08 = image_loader(self.images_B08[index])
 
-        # to consider all 4 channels
-        #imageB08 = image_loader(self.images_B08[index])
-        #image = np.dstack((imageB02,imageB03,imageB04,imageB08))/5000
+        if self.selection == 'rgb':
+            image = np.dstack((imageB02,imageB03,imageB04))/5000
+        elif self.selection == 'all': # consider all 4 channels
+            image = np.dstack((imageB02,imageB03,imageB04,imageB08))/5000
+        elif self.selection == "bands": # the config must contain a self.bands field with a list of chosen bands
+            idx = []
+            s2_bands = ["B02","B03","B04","B08"] # available s2 bands in this dataset
+            image = np.dstack((imageB02,imageB03,imageB04,imageB08))/5000
+            for b in self.bands:
+                if b not in s2_bands:
+                    print("The bands must be valid and available Sentinel-2 bands, i.e. one of B02, B03, B04, B08")
+                    break
+                else:
+                    idx.append(s2_bands.index(b))
+            image = image[:,:,idx]
+
 
         mask = image_loader(self.masks[index])
         masks = [(mask == v) for v, label in enumerate(self.labels)]

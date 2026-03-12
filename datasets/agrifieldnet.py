@@ -7,7 +7,7 @@ import seaborn as sns
 
 from .semantic_segmentation import SemanticSegmentationDataset
 from ..utils import image_loader
-from .schemas import FAIREOSchema
+from .schemas import AgriFieldNetSchema
 
 """
 This dataset contains crop types of agricultural fields in four states of Uttar Pradesh, Rajasthan, Odisha 
@@ -24,7 +24,7 @@ class AgriFieldNetDataset(SemanticSegmentationDataset):
     color_mapping = [[0,0,0],[192,50,192],[255,0,0],[255,255,0],[192,192,0],[0,255,0],[125,125,125],[0,0,255],
                      [255,255,255],[0,125,255],[125,0,125],[125,125,0],[125,255,0],[125,0,255]] 
     name = "AgriFieldNet"
-    schema = FAIREOSchema
+    schema = AgriFieldNetSchema
 
     def __init__(self, config):
         # now call the constructor to validate the schema and split the data
@@ -32,7 +32,7 @@ class AgriFieldNetDataset(SemanticSegmentationDataset):
         self.data_dir = self.config.data_dir
         self.selection = self.config.selection
         self.csv_file = self.config.csv_file
-
+        self.bands = self.config.bands
 
     def __getitem__(self, index):
         if self.selection == "rgb":
@@ -41,7 +41,7 @@ class AgriFieldNetDataset(SemanticSegmentationDataset):
             imageB04 = image_loader(self.imagesB04[index])
             image = np.dstack((imageB04,imageB03,imageB02))
 
-        elif self.selection == "all":
+        elif self.selection == "all" or self.selection == "bands":
             imageB01 = image_loader(self.imagesB01[index])
             imageB02 = image_loader(self.imagesB02[index])
             imageB03 = image_loader(self.imagesB03[index])
@@ -52,11 +52,20 @@ class AgriFieldNetDataset(SemanticSegmentationDataset):
             imageB08 = image_loader(self.imagesB08[index])
             imageB8A = image_loader(self.imagesB8A[index])
             imageB09 = image_loader(self.imagesB09[index])
-            imageB10 = image_loader(self.imagesB10[index])
             imageB11 = image_loader(self.imagesB11[index])
             imageB12 = image_loader(self.imagesB12[index])
-            
-            image = np.dstack((imageB01,imageB02,imageB03,imageB04, imageB05,imageB06,imageB07,imageB08,imageB8A,imageB09,imageB10,imageB11,imageB12))
+            image = np.dstack((imageB01,imageB02,imageB03,imageB04, imageB05,imageB06,imageB07,imageB08,imageB8A,imageB09,imageB11,imageB12))
+
+            if self.selection == "bands": # the config must contain a self.bands field with a list of chosen bands
+                idx = []
+                s2_bands = ["B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B11","B12"]
+                for b in self.bands:
+                    if b not in s2_bands:
+                        print("The bands must be valid and available Sentinel-2 bands, i.e. one of B01, B02, B03, B04, B05, B06, B07, B08, B8A, B09, B11, B12")
+                        break
+                    else:
+                        idx.append(s2_bands.index(b))
+                image = image[:,:,idx]
 
         mask = image_loader(self.masks[index])
         masks = [(mask == v) for v, label in enumerate(self.labels)]
@@ -90,7 +99,6 @@ class AgriFieldNetDataset(SemanticSegmentationDataset):
             self.imagesB08 = [os.path.join(data_dir, image_id[1], "source/B08", f'{image_id[0]}_B08_10m.tif') for image_id in ids]
             self.imagesB8A = [os.path.join(data_dir, image_id[1], "source/B8A", f'{image_id[0]}_B8A_10m.tif') for image_id in ids]
             self.imagesB09 = [os.path.join(data_dir, image_id[1], "source/B09", f'{image_id[0]}_B09_10m.tif') for image_id in ids]
-            self.imagesB10 = [os.path.join(data_dir, image_id[1], "source/B10", f'{image_id[0]}_B10_10m.tif') for image_id in ids]
             self.imagesB11 = [os.path.join(data_dir, image_id[1], "source/B11", f'{image_id[0]}_B11_10m.tif') for image_id in ids]
             self.imagesB12 = [os.path.join(data_dir, image_id[1], "source/B12", f'{image_id[0]}_B12_10m.tif') for image_id in ids]
 
@@ -110,7 +118,6 @@ class AgriFieldNetDataset(SemanticSegmentationDataset):
             self.imagesB08 = [os.path.join(data_dir, "source/B08", image_id[: image_id.rfind('B01')]+'B08_10m.tif') for image_id in ids]
             self.imagesB8A = [os.path.join(data_dir, "source/B8A", image_id[: image_id.rfind('B01')]+'B8A_10m.tif') for image_id in ids]
             self.imagesB09 = [os.path.join(data_dir, "source/B09", image_id[: image_id.rfind('B01')]+'B09_10m.tif') for image_id in ids]
-            self.imagesB10 = [os.path.join(data_dir, "source/B10", image_id[: image_id.rfind('B01')]+'B10_10m.tif') for image_id in ids]
             self.imagesB11 = [os.path.join(data_dir, "source/B11", image_id[: image_id.rfind('B01')]+'B11_10m.tif') for image_id in ids]
             self.imagesB12 = [os.path.join(data_dir, "source/B12", image_id[: image_id.rfind('B01')]+'B12_10m.tif') for image_id in ids]
 

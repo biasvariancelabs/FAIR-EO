@@ -224,6 +224,12 @@ class SEN12MSSchema(BaseDatasetSchema):
     imagery = fields.String(
         missing="s2", description="Consider s1, s2 or both s1 and s2 images", example="s1/s2/s1 and s2"
     )
+    bands_s2 = fields.List(
+        fields.String(), missing=None, description="Select which S2 bands to use with a list of band names", example=["B02","B03","B04"]
+    )
+    bands_s1 = fields.List(
+        fields.String(), missing=None, description="Select which S1 bands to use with a list of band names", example=["VV","VH"]
+    )
 
 class PASTISHDSchema(BaseDatasetSchema):
     """
@@ -240,6 +246,12 @@ class PASTISHDSchema(BaseDatasetSchema):
     )
     imagery = fields.String(
         missing="SPOT", description="read S1A, S1D, S2 and SPOT imagery or SPOT imagery only", example="all/SPOT"
+    )
+    bands_s2 = fields.List(
+        fields.String(), missing=None, description="Select which S2 bands to use with a list of band names", example=["B01","B02","B03"]
+    )
+    bands_s1 = fields.List(
+        fields.String(), missing=None, description="Select which s1 bands to use with a list of band names", example=["VV","VH"]
     )
 
 class SatlasPretrainSemanticSegmentationSchema(BaseDatasetSchema):
@@ -429,4 +441,55 @@ class TallosSchema(BaseDatasetSchema):
     )
     bands = fields.List(
         fields.String(), missing=None, description="Select which S2 bands to use with a list of band names", example=["B01","B02","B03"]
+    )
+
+class Sentinel2CloudCoverSchema(BaseDatasetSchema):
+    """
+    Schema for configuring Sentinel-2 Cloud Cover dataset.
+    """
+    csv_file = fields.String(
+        missing=None, description="CSV file on disk", example="./data/train.csv"
+    )
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/CESBIO/"
+    )
+    selection = fields.String(
+        missing="rgb", description="Read RGB channels, specific channels or all channels", example="all/rgb/bands"
+    )
+    bands = fields.List(
+        fields.String(), missing=None, description="Select which S2 bands to use with a list of band names", example=["B02","B03","B04"]
+    )
+
+class AIRPolSARSegSchema(BaseDatasetSchema):
+    """
+    Schema for configuring AIR-PolSAR-Seg dataset.
+    """
+    csv_file = fields.String(
+        missing=None, description="CSV file on disk", example="./data/train.csv"
+    )
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/CESBIO/"
+    )
+    selection = fields.String(
+        missing="rgb", description="Read RGB channels, specific channels or all channels", example="all/rgb/bands"
+    )
+    bands = fields.List(
+        fields.String(), missing=None, description="Select which bands to use with a list of band names", example=["HH","HV","VV"]
+    )
+
+class AgriFieldNetSchema(BaseDatasetSchema):
+    """
+    Schema for configuring AgriFieldNet dataset.
+    """
+    csv_file = fields.String(
+        missing=None, description="CSV file on disk", example="./data/train.csv"
+    )
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/CESBIO/"
+    )
+    selection = fields.String(
+        missing="rgb", description="Read RGB channels, specific channels or all channels", example="all/rgb/bands"
+    )
+    bands = fields.List(
+        fields.String(), missing=None, description="Select which S2 bands to use with a list of band names", example=["B02","B03","B04"]
     )

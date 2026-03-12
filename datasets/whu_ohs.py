@@ -37,19 +37,21 @@ class WHUOHSDataset(SemanticSegmentationDataset):
         self.data_dir = self.config.data_dir
         self.selection = self.config.selection
         self.csv_file = self.config.csv_file
-
+        self.selection = self.config.selection
 
     def __getitem__(self, index):
         image = image_loader(self.images[index])
 
         # to consider 3-band RGB images
-        Red = image[:,:,13]
-        Green = image[:,:,6]
-        Blue = image[:,:,1]
-        image = np.dstack([Red,Green,Blue])/10000 #pixel values were scaled by 10000
+        if self.selection == 'rgb':
+            Red = image[:,:,13]
+            Green = image[:,:,6]
+            Blue = image[:,:,1]
+            image = np.dstack([Red,Green,Blue])/10000 #pixel values were scaled by 10000
 
         # to consider all the 32 bands
-        # image = image/10000
+        elif self.selection == 'all':
+            image = image/10000
 
         mask = image_loader(self.masks[index])
         masks = [(mask == v) for v, label in enumerate(self.labels)]

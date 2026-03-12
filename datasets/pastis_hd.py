@@ -12,9 +12,10 @@ from .semantic_segmentation import SemanticSegmentationDataset
 
 
 '''
-PASTIS-HD is a high-resolution multimodal benchmark dataset for semantic segmentation of agricultural parcels 
-from satellite image time series. This implementation uses Sentinel-2 optical bands and semantic annotations 
-for compatibility with the aitlas framework.
+PASTIS-HD is a high-resolution multimodal benchmark dataset for semantic segmentation of agricultural parcels from 
+satellite image time series. It combines 10m-resolution Sentinel-2 optical bands, SAR (VV and VH) from Sentinel-1, 
+and very high-resolution (VHR) SPOT 6-7 RGB imagery. Each instance includes a time series with multi-sensor signals 
+and corresponding semantic labels.
 '''
 
 class PASTISHDDataset(SemanticSegmentationDataset):
@@ -72,6 +73,8 @@ class PASTISHDDataset(SemanticSegmentationDataset):
         self.csv_file = self.config.csv_file
         self.selection = self.config.selection
         self.imagery = self.config.imagery
+        self.bands_s2 = self.config.bands_s2
+        self.bands_s1 = self.config.bands_s1
 
     def __getitem__(self, index):
         id = self.data[index]
@@ -88,18 +91,51 @@ class PASTISHDDataset(SemanticSegmentationDataset):
         for t in range(s2_image.shape[0]): # S2 has 10 bands
             if self.selection == "rgb":
                 time_step_image = np.transpose(s2_image[t, [2,1,0]], (1, 2, 0))
-            else:
+            elif self.selection == "all":
                 time_step_image = np.transpose(s2_image[t, :], (1, 2, 0))
+            elif self.selection == "bands": # the config must contain a self.bands field with a list of chosen bands
+                idx = []
+                s2_bands = ["B02","B03","B04","B05","B06","B07","B08","B8A","B11","B12"]
+                for b in self.bands_s2:
+                    if b not in s2_bands:
+                        print("The bands must be valid Sentinel-2 bands, i.e. one of B02, B03, B04, B05, B06, B07, B08, B8A, B11, B12")
+                        break
+                    else:
+                        idx.append(s2_bands.index(b))
+                time_step_image = np.transpose(s2_image[t, idx], (1, 2, 0))
+
             image_list.append(time_step_image)
         s2 = np.array(image_list)
 
         for t in range(s1a_image.shape[0]): # S1 has VV, VH and VV/VH bands
-            time_step_image_s1a = np.transpose(s1a_image[t, 0:3], (1, 2, 0))
+            if self.selection == "rgb" or self.selection == "all":
+                time_step_image_s1a = np.transpose(s1a_image[t, 0:3], (1, 2, 0))
+            elif self.selection == "bands": # the config must contain a self.bands field with a list of chosen bands
+                idx = []
+                s1_bands = ["VV","VH","VV/VH"]
+                for b in self.bands_s1:
+                    if b not in s1_bands:
+                        print("The bands must be valid and available Sentinel-1 bands, i.e. one of VV, VH, VV/VH")
+                        break
+                    else:
+                        idx.append(s1_bands.index(b))
+                time_step_image_s1a = np.transpose(s1a_image[t, idx], (1, 2, 0)) 
             image_list_s1a.append(time_step_image_s1a)
         s1a = np.array(image_list_s1a)
 
         for t in range(s1d_image.shape[0]): # S1 has VV, VH and VV/VH bands
-            time_step_image_s1d = np.transpose(s1d_image[t, 0:3], (1, 2, 0))
+            if self.selection == "rgb" or self.selection == "all":
+                time_step_image_s1d = np.transpose(s1d_image[t, 0:3], (1, 2, 0))
+            elif self.selection == "bands": # the config must contain a self.bands field with a list of chosen bands
+                idx = []
+                s1_bands = ["VV","VH","VV/VH"]
+                for b in self.bands_s1:
+                    if b not in s1_bands:
+                        print("The bands must be valid and available Sentinel-1 bands, i.e. one of VV, VH, VV/VH")
+                        break
+                    else:
+                        idx.append(s1_bands.index(b))
+                time_step_image_s1d = np.transpose(s1d_image[t, idx], (1, 2, 0)) 
             image_list_s1d.append(time_step_image_s1d)
         s1d = np.array(image_list_s1d)
 
@@ -174,7 +210,6 @@ class PASTISHDDataset(SemanticSegmentationDataset):
             if os.path.exists(path):
                 available_modalities.append((modality, path))
 
-        self.selection = "rgb"
         _, mask = self.__getitem__(index)
 
         img_mask = np.zeros([mask.shape[0], mask.shape[1], 3], np.uint8)

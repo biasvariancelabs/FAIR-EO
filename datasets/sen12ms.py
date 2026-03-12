@@ -37,6 +37,8 @@ class SEN12MSDataset(BaseDataset):
         self.selection = self.config.selection
         self.imagery = self.config.imagery
         self.csv_file = self.config.csv_file
+        self.bands_s2 = self.config.bands_s2
+        self.bands_s1 = self.config.bands_s1
         self.s1images, self.s2images, self.masks = self.load_dataset(self.data_dir, self.csv_file)
 
     def __getitem__(self, index):
@@ -48,6 +50,17 @@ class SEN12MSDataset(BaseDataset):
                 s2image = s2image[:,:,1:4]
             elif self.selection == 'all': # 13 bands
                 s2image = s2image[:,:,:]
+            elif self.selection == "bands": # the config must contain a self.bands field with a list of chosen bands
+                idx = []
+                s2_bands = ["B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B10","B11","B12"]
+                for b in self.bands_s2:
+                    if b not in s2_bands:
+                        print("The bands must be valid Sentinel-2 bands, i.e. one of B01, B02, B03, B04, B05, B06, B07, B08, B8A, B09, B10, B11, B12")
+                        break
+                    else:
+                        idx.append(s2_bands.index(b))
+                s2image = s2image[:,:,idx]
+
             # Normalize image
             img_min, img_max = s2image.min(), s2image.max()
             s2image = (s2image - img_min) / (img_max - img_min + 1e-8)
@@ -62,8 +75,19 @@ class SEN12MSDataset(BaseDataset):
         
             if self.selection == 'rgb': # (VV,VH,VV/VH)
                 s1image = np.dstack((s1image[:,:,0], s1image[:,:,1], s1image[:,:,0]/s1image[:,:,1])) 
-            else: # original 2-band (VV,VH)
+            elif self.selection == 'all': # original 2-band (VV,VH)
                 s1image = s1image[:,:,:]
+            elif self.selection == 'bands': # the config must contain a self.bands field with a list of chosen bands
+                idx = []
+                s1_bands = ["VV","VH"]
+                for b in self.bands_s1:
+                    if b not in s1_bands:
+                        print("The bands must be valid Sentinel-1 bands, i.e. one of VV, VH")
+                        break
+                    else:
+                        idx.append(s1_bands.index(b))
+                s1image = s1image[:,:,idx]
+                
             # Normalize image
             img_min, img_max = s1image.min(), s1image.max()
             s1image = (s1image - img_min) / (img_max - img_min + 1e-8)
@@ -79,6 +103,16 @@ class SEN12MSDataset(BaseDataset):
                 s2image = s2image[:,:,1:4]
             elif self.selection == 'all': # 13 bands
                 s2image = s2image[:,:,:]
+            elif self.selection == "bands": # the config must contain a self.bands field with a list of chosen bands
+                idx = []
+                s2_bands = ["B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B10","B11","B12"]
+                for b in self.bands_s2:
+                    if b not in s2_bands:
+                        print("The bands must be valid Sentinel-2 bands, i.e. one of B01, B02, B03, B04, B05, B06, B07, B08, B8A, B09, B10, B11, B12")
+                        break
+                    else:
+                        idx.append(s2_bands.index(b))
+                s2image = s2image[:,:,idx]
             # Normalize image
             img_min, img_max = s2image.min(), s2image.max()
             s2image = (s2image - img_min) / (img_max - img_min + 1e-8)
@@ -88,8 +122,18 @@ class SEN12MSDataset(BaseDataset):
             s1image = image_loader(self.s1images[index])
             if self.selection == 'rgb': # (VV,VH,VV/VH)
                 s1image = np.dstack((s1image[:,:,0], s1image[:,:,1], s1image[:,:,0]/s1image[:,:,1])) 
-            else: # original 2-band (VV,VH)
+            elif self.selection == 'all': # original 2-band (VV,VH)
                 s1image = s1image[:,:,:]
+            elif self.selection == 'bands': # the config must contain a self.bands field with a list of chosen bands
+                idx = []
+                s1_bands = ["VV","VH"]
+                for b in self.bands_s1:
+                    if b not in s1_bands:
+                        print("The bands must be valid Sentinel-1 bands, i.e. one of VV, VH")
+                        break
+                    else:
+                        idx.append(s1_bands.index(b))
+                s1image = s1image[:,:,idx]
             # Normalize image
             img_min, img_max = s1image.min(), s1image.max()
             s1image = (s1image - img_min) / (img_max - img_min + 1e-8)
@@ -196,6 +240,9 @@ class SEN12MSDataset(BaseDataset):
         return fig
     
     def show_image(self, index, show_title=False):
+        if self.selection != 'rgb':
+            print("The selection parameter must be set to rgb for image visualization")
+            
         img, mask = self[index]
         img_mask = np.zeros([mask.shape[0], mask.shape[1], 3], np.uint8)
         legend_elements = []

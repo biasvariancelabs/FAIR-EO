@@ -5,7 +5,7 @@ import csv
 
 from .semantic_segmentation import SemanticSegmentationDataset
 from ..utils import image_loader
-from .schemas import FAIREOSchema
+from .schemas import AIRPolSARSegSchema
 
 """
 The AIR-PolSAR-Seg dataset is a challenging PolSAR terrain segmentation dataset with high 
@@ -22,7 +22,7 @@ class AIRPolSARSegDataset(SemanticSegmentationDataset):
     labels = ["industrial","natural","land use","water","other","housing"]
     color_mapping = [[0,0,255],[0,255,0],[255,0,0],[0,255,255],[255,255,255],[255,255,0]] 
     name = "AIR-PolSAR-Seg"
-    schema = FAIREOSchema
+    schema = AIRPolSARSegSchema
 
     def __init__(self, config):
         # now call the constructor to validate the schema and split the data
@@ -30,6 +30,7 @@ class AIRPolSARSegDataset(SemanticSegmentationDataset):
         self.data_dir = self.config.data_dir
         self.selection = self.config.selection
         self.csv_file = self.config.csv_file
+        self.bands = self.config.bands
 
     def __getitem__(self, index):
         mask = image_loader(self.masks[index])
@@ -53,21 +54,29 @@ class AIRPolSARSegDataset(SemanticSegmentationDataset):
         masks = [(single_band_mask == v) for v, label in enumerate(self.labels)]
         mask = np.stack(masks, axis=-1).astype("float32")
 
+        imageHH = image_loader(self.imagesHH[index])
+        imageHV = image_loader(self.imagesHV[index])
+        imageVH = image_loader(self.imagesVH[index])
+        imageVV = image_loader(self.imagesVV[index])
+
         if self.selection == "rgb":
-            imageHH = image_loader(self.imagesHH[index])
-            imageHV = image_loader(self.imagesHV[index])
             imageHH_HV = (imageHH/imageHV).astype("uint16")
             image = np.dstack((imageHH, imageHV, imageHH_HV))
 
-        elif self.selection == "all bands":
-            imageHH = image_loader(self.imagesHH[index])
-            imageHV = image_loader(self.imagesHV[index])
-            imageVH = image_loader(self.imagesVH[index])
-            imageVV = image_loader(self.imagesVV[index])
+        elif self.selection == "all":
             image = np.dstack((imageHH, imageHV, imageVH, imageVV))
 
-        else: # HH images
-            image = image_loader(self.images[index])
+        elif self.selection == "bands": # the config must contain a self.bands field with a list of chosen bands
+            idx = []
+            bands = ["HH","HV","VH","VV"]
+            image = np.dstack((imageHH, imageHV, imageVH, imageVV))
+            for b in self.bands:
+                if b not in bands:
+                    print("The bands must be valid Gaofen 3 bands, i.e. one of HH, HV, VH, VV")
+                    break
+                else:
+                    idx.append(bands.index(b))
+            image = image[:,:,idx]
 
         if self.transform:
             image = self.transform(image)
