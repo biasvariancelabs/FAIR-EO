@@ -393,6 +393,12 @@ class MSBCSchema(BaseDatasetSchema):
     imagery = fields.String(
         missing="s2", description="Consider only one of s1, s2, aerial or all sources", example="s1/s2/aerial/all"
     )
+    bands_s2 = fields.List(
+        fields.String(), missing=None, description="Select which S2 bands to use with a list of band names", example=["B01","B02","B03"]
+    )
+    bands_s1 = fields.List(
+        fields.String(), missing=None, description="Select which S1 bands to use with a list of band names", example=["VV","VH"]
+    )
 
 class SMARSSchema(BaseDatasetSchema):
     """
@@ -492,4 +498,24 @@ class AgriFieldNetSchema(BaseDatasetSchema):
     )
     bands = fields.List(
         fields.String(), missing=None, description="Select which S2 bands to use with a list of band names", example=["B02","B03","B04"]
+    )
+
+class OmbriaSchema(BaseDatasetSchema):
+    """
+    Schema for configuring Ombria dataset.
+    """
+    csv_file = fields.String(
+        missing=None, description="CSV file on disk", example="./data/train.csv"
+    )
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/CESBIO/"
+    )
+    selection = fields.String(
+        missing="rgb", description="Read RGB channels or all original channels", example="all/rgb"
+    )
+    mode = fields.String(
+        missing=None, description="train/val or test task", example="train"
+    )
+    imagery = fields.String(
+        missing="S2", description="Consider only one of s1, s2 or all sources", example="S1/S2/all"
     )

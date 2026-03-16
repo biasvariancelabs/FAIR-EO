@@ -5,9 +5,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import csv
 from matplotlib.patches import Patch
+from PIL import Image
 
 from .semantic_segmentation import BaseDataset
-from .schemas import FAIREOSchema
+from .schemas import OmbriaSchema
 from ..utils import image_loader
 
 
@@ -20,7 +21,7 @@ class OMBRIADataset(BaseDataset):
 
     url = "https://github.com/geodrak/OMBRIA"
     name = "OMBRIA"
-    schema = FAIREOSchema
+    schema = OmbriaSchema
     labels = ["no change","flood"]
     color_mapping =  [[0,0,0],[255, 255, 255]]
 
@@ -32,6 +33,7 @@ class OMBRIADataset(BaseDataset):
         self.csv_file = self.config.csv_file
         self.mode = self.config.mode
         self.selection = self.config.selection
+        self.imagery = self.config.imagery
         self.data = self.load_dataset(self.data_dir)
 
     def __getitem__(self, index):
@@ -44,9 +46,25 @@ class OMBRIADataset(BaseDataset):
             split = self.data[index][1] # original split of that sample
 
         # s1 images have a shape of (256 x 256 x 1)
+        if self.imagery == 'S1':
+            imagery = self.imagery
+            pre_image = image_loader(os.path.join(self.data_dir, f'Ombria{imagery}', split, 'BEFORE', f'{imagery}_before_{img_id}.png'))
+            if self.selection == "rgb": # (256 x 256 x 3)
+                pre_image = np.asarray(Image.fromarray(pre_image).convert('RGB'))
+            #normalize image for better visualization
+            pre_image = (pre_image - pre_image.min()) / (pre_image.max() - pre_image.min() + 1e-8)
+
+            post_image = image_loader(os.path.join(self.data_dir, f'Ombria{imagery}', split, 'AFTER', f'{imagery}_after_{img_id}.png'))
+            if self.selection == "rgb": # (256 x 256 x 3)
+                post_image = np.asarray(Image.fromarray(post_image).convert('RGB'))
+            #normalize image
+            post_image = (post_image - post_image.min()) / (post_image.max() - post_image.min() + 1e-8)
+
+            mask = image_loader(os.path.join(self.data_dir, f'Ombria{imagery}', split, 'MASK', f'{imagery}_mask_{img_id}.png'))
+
         # s2 images have a shape of (256 x 256 x 3)
-        if self.selection == 'S1' or self.selection == 'S2':
-            imagery = self.selection
+        if self.imagery == 'S2':
+            imagery = self.imagery
             pre_image = image_loader(os.path.join(self.data_dir, f'Ombria{imagery}', split, 'BEFORE', f'{imagery}_before_{img_id}.png'))
             #normalize image for better visualization
             img_min, img_max = pre_image.min(), pre_image.max()
@@ -59,9 +77,12 @@ class OMBRIADataset(BaseDataset):
 
             mask = image_loader(os.path.join(self.data_dir, f'Ombria{imagery}', split, 'MASK', f'{imagery}_mask_{img_id}.png'))
 
-        elif self.selection == 'all':
+        elif self.imagery == 'all':
             s1_pre_image = image_loader(os.path.join(self.data_dir, f'OmbriaS1', split, 'BEFORE', f'S1_before_{img_id}.png'))
             s1_post_image = image_loader(os.path.join(self.data_dir, f'OmbriaS1', split, 'AFTER', f'S1_after_{img_id}.png'))
+            if self.selection == "rgb": # (256 x 256 x 3)
+                s1_pre_image = np.asarray(Image.fromarray(s1_pre_image).convert('RGB'))
+                s1_post_image = np.asarray(Image.fromarray(s1_post_image).convert('RGB'))
 
             s2_pre_image = image_loader(os.path.join(self.data_dir, f'OmbriaS2', split, 'BEFORE', f'S2_before_{img_id}.png'))
             s2_post_image = image_loader(os.path.join(self.data_dir, f'OmbriaS2', split, 'AFTER', f'S2_after_{img_id}.png'))
@@ -140,7 +161,7 @@ class OMBRIADataset(BaseDataset):
         fig.legend(handles=legend_elements, bbox_to_anchor=(0.1, 1.05, 0.8, 0.05), ncol=3,
                     loc='center', prop={'size': 12})
         
-        if self.selection == 'all':
+        if self.imagery == 'all':
             plt.subplot(1, 5, 1)
             plt.imshow(pre_img[:,:,0])
             plt.title("S1 Pre-event")
