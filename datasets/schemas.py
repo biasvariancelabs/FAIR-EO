@@ -519,3 +519,26 @@ class OmbriaSchema(BaseDatasetSchema):
     imagery = fields.String(
         missing="S2", description="Consider only one of s1, s2 or all sources", example="S1/S2/all"
     )
+
+class RapidAI4EOSchema(BaseDatasetSchema):
+    """
+    Schema for configuring the RapidAI4EO dataset.
+    """
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/CESBIO/"
+    )
+    csv_file = fields.String(
+        missing=None, description="CSV path on disk", example="./data/CESBIO/train.csv"
+    )
+    selection = fields.String(
+        missing="rgb", description="Read RGB channels or more than 3 channels", example="all/rgb"
+    )
+    date = fields.String(
+        missing=None, description="Visualise images for a particular date", example="1"
+    )  
+    imagery = fields.String(
+        missing="S2", description="Select which imagery to use: 'S2' for Sentinel-2, 'PF' for Planet Fusion", example="S2"
+    )
+    task = fields.String(
+        missing=None, description="Select which split to use, train, val or test", example="train"
+    )
