@@ -114,7 +114,10 @@ class BrazilDAMDataset(BaseDataset):
                 l8_img = l8_img[:,:,idx]
             l8_img = (l8_img - l8_img.min()) / (l8_img.max() - l8_img.min() + 1e-8)
 
-            img = np.dstack((s2_img, l8_img))
+            img = {
+                "sentinel": s2_img, 
+                "landsat": l8_img
+                }
         
         # apply transformations
         if self.transform:
@@ -204,8 +207,8 @@ class BrazilDAMDataset(BaseDataset):
             plt.imshow(self[index][0])
 
         elif self.imagery == 'sentinel and landsat paired':    
-            s2_img = self[index][0][:,:,:3]
-            l8_img = self[index][0][:,:,3:]
+            s2_img = self[index][0]["sentinel"]
+            l8_img = self[index][0]["landsat"]
             label = self.labels[self[index][1]]
 
             fig, axs = plt.subplots(1, 2, figsize=(16, 6))
