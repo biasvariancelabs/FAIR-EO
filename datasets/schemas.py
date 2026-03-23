@@ -288,7 +288,7 @@ class SSL4EOS12MLSchema(BaseDatasetSchema):
         missing="rgb", description="Read RGB channels or more than 3 channels", example="all/rgb"
     )
     imagery = fields.String(
-        missing="S2 L2A", description="read S1, S2 L1C and S2 L2A imagery or one source only", example="S2 L1C/S2 L2A/S1/all"
+        missing="S2 L2A", description="Choose which imagery source to read", example="S2 L1C/S2 L2A/S1/all"
     )
     bands_s2 = fields.List(
         fields.String(), missing=None, description="Select which S2 bands to use with a list of band names", example=["B01","B02","B03"]

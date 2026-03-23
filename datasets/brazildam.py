@@ -53,7 +53,11 @@ class BrazilDAMDataset(BaseDataset):
             if satellite == "sentinel": 
                 if self.selection == "rgb":
                     img = img[:,:,1:4]
-                elif self.selection == "bands": # the config must contain a self.bands field with a list of chosen bands
+                elif self.selection == "all":
+                    img = img
+                elif self.selection == "bands": 
+                    if self.bands_s2 == None:
+                        print("The config must contain a bands_s2 field with a list of chosen bands")
                     idx = []
                     s2_bands = ["B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B10","B11","B12"]
                     for b in self.bands_s2:
@@ -67,7 +71,11 @@ class BrazilDAMDataset(BaseDataset):
             elif satellite == "landsat": 
                 if self.selection == "rgb":
                     img = img[:,:,1:4]
+                elif self.selection == "all":
+                    img = img
                 elif self.selection == "bands": 
+                    if self.bands_l8 == None:
+                        print("The config must contain a bands_l8 field with a list of chosen bands")
                     idx = []
                     l8_bands = ["B01","B02","B03","B04","B05","B06","B07","B08","B09","B10","B11"]
                     for b in self.bands_l8:
@@ -87,7 +95,11 @@ class BrazilDAMDataset(BaseDataset):
             s2_img = image_loader(os.path.join(self.data_dir, "sentinel", self.data[index][0][0]))
             if self.selection == "rgb":
                 s2_img = s2_img[:,:,1:4]
+            elif self.selection == "all":
+                s2_img = s2_img
             elif self.selection == "bands":
+                if self.bands_s2 == None:
+                    print("The config must contain a bands_s2 field with a list of chosen bands")
                 idx = []
                 s2_bands = ["B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B10","B11","B12"]
                 for b in self.bands_s2:
@@ -102,7 +114,11 @@ class BrazilDAMDataset(BaseDataset):
             l8_img = image_loader(os.path.join(self.data_dir, "landsat", self.data[index][0][0]))
             if self.selection == "rgb":
                 l8_img = l8_img[:,:,1:4]
+            elif self.selection == "all":
+                l8_img = l8_img
             elif self.selection == "bands": 
+                if self.bands_l8 == None:
+                    print("The config must contain a bands_l8 field with a list of chosen bands")
                 idx = []
                 l8_bands = ["B01","B02","B03","B04","B05","B06","B07","B08","B09","B10","B11"]
                 for b in self.bands_l8:
@@ -114,10 +130,7 @@ class BrazilDAMDataset(BaseDataset):
                 l8_img = l8_img[:,:,idx]
             l8_img = (l8_img - l8_img.min()) / (l8_img.max() - l8_img.min() + 1e-8)
 
-            img = {
-                "sentinel": s2_img, 
-                "landsat": l8_img
-                }
+            img = np.dstack((s2_img, l8_img))
         
         # apply transformations
         if self.transform:
@@ -171,13 +184,13 @@ class BrazilDAMDataset(BaseDataset):
         return self.labels
     
     def show_samples(self):
-        file_names = [os.path.basename(item[0]) for item in self.data]
-        labels = [item[1] for item in self.data]
+        file_names = [os.path.basename(item[0][0]) for item in self.data]
+        labels = [self.labels[item[0][1]] for item in self.data]
         df = pd.DataFrame({'File_name': file_names, 'Label': labels})
         return df.head(20)
     
     def data_distribution_table(self):
-        df = pd.DataFrame(self.data, columns=['File_name', 'Label'])
+        df = pd.DataFrame([item for item, _ in self.data], columns=['File_name', 'Label'])
         label_count = df.groupby("Label").count().reset_index()
         label_count['Label'] = ["nao_barragem","barragem"]
         label_count.columns = ["Label", "Count"]
@@ -207,8 +220,8 @@ class BrazilDAMDataset(BaseDataset):
             plt.imshow(self[index][0])
 
         elif self.imagery == 'sentinel and landsat paired':    
-            s2_img = self[index][0]["sentinel"]
-            l8_img = self[index][0]["landsat"]
+            s2_img = self[index][0][:,:,:3]
+            l8_img = self[index][0][:,:,3:]
             label = self.labels[self[index][1]]
 
             fig, axs = plt.subplots(1, 2, figsize=(16, 6))

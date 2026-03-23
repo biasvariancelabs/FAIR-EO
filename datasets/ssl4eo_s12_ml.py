@@ -14,6 +14,7 @@ import os
 import csv
 import json
 from skimage.transform import resize
+import fnmatch
 
 '''
 SSL4EO-S12-ML dataset is a large-scale multi-label land cover land use classification dataset derived from 
@@ -55,63 +56,79 @@ class SSL4EOS12MLDataset(BaseDataset):
         Returns:
             tuple: (image, target) where target is a multi-hot vector.
         """
+        # The S2 L2A and S1 images don't have the exact same date of acquisition as S2 L1C
+        # We find the matching S2 L2A and S1 images knowing that they have the same position index in the images folder
+        tile = self.images[index][0].split('/')[0]
+        file_name = self.images[index][0].split('/')[1]
+        timestamps = []
+        for timestamp in os.listdir(os.path.join(self.data_dir, 's2_l1c/s2c', tile)):
+            timestamps.append(timestamp)
+        timestamp_index = timestamps.index(file_name)
 
         # Sentinel-2 L1C
-        img_path = os.path.join(self.data_dir, 's2_l1c/s2c', self.images[index][0])
-        if self.selection == 'rgb':
-            b02 = self.image_loader(os.path.join(img_path, 'B2.tif'))
-            b03 = self.image_loader(os.path.join(img_path, 'B3.tif'))
-            b04 = self.image_loader(os.path.join(img_path, 'B4.tif'))
-            s2c_image = np.stack((b02,b03,b04))
-        elif self.selection == 'all':
-            band_filenames = {
-                "B01": "B1.tif",  "B02": "B2.tif",  "B03": "B3.tif",
-                "B04": "B4.tif",  "B05": "B5.tif",  "B06": "B6.tif",
-                "B07": "B7.tif",  "B08": "B8.tif",  "B8A": "B8A.tif",
-                "B09": "B9.tif",  "B10": "B10.tif", "B11": "B11.tif",
-                "B12": "B12.tif"
-            }
-            # Load a 10m band as reference shape to resize images (all images must have the same shape for stacking)
-            reference = self.image_loader(os.path.join(img_path, "B2.tif"))
-            target_shape = reference.shape
-            loaded_bands = []
-            for filename in band_filenames.values():
-                arr = self.image_loader(os.path.join(img_path, filename))
-                if arr.shape != target_shape:
-                    arr = resize(arr, target_shape, order=1, preserve_range=True).astype(arr.dtype)
-                loaded_bands.append(arr)
-            s2c_image = np.stack(loaded_bands)
-        elif self.selection == 'bands':
-            s2_bands = ["B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B10","B11","B12"] # all 13 accepted s2 bands
-            band_filenames = {
-                "B01": "B1.tif",  "B02": "B2.tif",  "B03": "B3.tif",
-                "B04": "B4.tif",  "B05": "B5.tif",  "B06": "B6.tif",
-                "B07": "B7.tif",  "B08": "B8.tif",  "B8A": "B8A.tif",
-                "B09": "B9.tif",  "B10": "B10.tif", "B11": "B11.tif",
-                "B12": "B12.tif"
-            }
-            for band in self.bands_s2:
-                if band not in s2_bands:
-                    print("The bands must be valid Sentinel-2 bands, i.e. one of B01, B02, B03, B04, B05, B06, B07, B08, B8A, B09, B10, B11, B12")
-                    break  
-            # Load a 10m band as reference shape to resize images
-            reference = self.image_loader(os.path.join(img_path, "B2.tif")) 
-            target_shape = reference.shape
-            loaded_bands = []
-            for band in self.bands_s2:
-                arr = self.image_loader(os.path.join(img_path, band_filenames[band]))
-                if arr.shape != target_shape:
-                    arr = resize(arr, target_shape, order=1, preserve_range=True).astype(arr.dtype)
-                loaded_bands.append(arr)
-            s2c_image = np.stack(loaded_bands)
-        # normalize image 
-        img_min, img_max = s2c_image.min(), s2c_image.max()
-        s2c_image = (s2c_image - img_min) / (img_max - img_min + 1e-8)
+        if self.imagery == "S2 L1C":
+            img_path = os.path.join(self.data_dir, 's2_l1c/s2c', self.images[index][0])
+            if self.selection == 'rgb':
+                b02 = self.image_loader(os.path.join(img_path, 'B2.tif'))
+                b03 = self.image_loader(os.path.join(img_path, 'B3.tif'))
+                b04 = self.image_loader(os.path.join(img_path, 'B4.tif'))
+                s2c_image = np.stack((b02,b03,b04))
+            elif self.selection == 'all':
+                band_filenames = {
+                    "B01": "B1.tif",  "B02": "B2.tif",  "B03": "B3.tif",
+                    "B04": "B4.tif",  "B05": "B5.tif",  "B06": "B6.tif",
+                    "B07": "B7.tif",  "B08": "B8.tif",  "B8A": "B8A.tif",
+                    "B09": "B9.tif",  "B10": "B10.tif", "B11": "B11.tif",
+                    "B12": "B12.tif"
+                }
+                # Load a 10m band as reference shape to resize images (all images must have the same shape for stacking)
+                reference = self.image_loader(os.path.join(img_path, "B2.tif"))
+                target_shape = reference.shape
+                loaded_bands = []
+                for filename in band_filenames.values():
+                    arr = self.image_loader(os.path.join(img_path, filename))
+                    if arr.shape != target_shape:
+                        arr = resize(arr, target_shape, order=1, preserve_range=True).astype(arr.dtype)
+                    loaded_bands.append(arr)
+                s2c_image = np.stack(loaded_bands)
+            elif self.selection == 'bands':
+                if self.bands_s2 == None:
+                    print("The config must contain a bands_s2 field with a list of chosen bands")
+                s2_bands = ["B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B10","B11","B12"] # all 13 accepted s2 bands
+                band_filenames = {
+                    "B01": "B1.tif",  "B02": "B2.tif",  "B03": "B3.tif",
+                    "B04": "B4.tif",  "B05": "B5.tif",  "B06": "B6.tif",
+                    "B07": "B7.tif",  "B08": "B8.tif",  "B8A": "B8A.tif",
+                    "B09": "B9.tif",  "B10": "B10.tif", "B11": "B11.tif",
+                    "B12": "B12.tif"
+                }
+                for band in self.bands_s2:
+                    if band not in s2_bands:
+                        print("The bands must be valid Sentinel-2 bands, i.e. one of B01, B02, B03, B04, B05, B06, B07, B08, B8A, B09, B10, B11, B12")
+                        break  
+                # Load a 10m band as reference shape to resize images
+                reference = self.image_loader(os.path.join(img_path, "B2.tif")) 
+                target_shape = reference.shape
+                loaded_bands = []
+                for band in self.bands_s2:
+                    arr = self.image_loader(os.path.join(img_path, band_filenames[band]))
+                    if arr.shape != target_shape:
+                        arr = resize(arr, target_shape, order=1, preserve_range=True).astype(arr.dtype)
+                    loaded_bands.append(arr)
+                s2c_image = np.stack(loaded_bands)
+            # normalize image 
+            img_min, img_max = s2c_image.min(), s2c_image.max()
+            s2c_image = (s2c_image - img_min) / (img_max - img_min + 1e-8)
 
         # Sentinel-2 L2A
-        # The Sentinel-2 L1C images were used for labeling. Therefore some of the Sentinel-2 L2A and Sentinel-1 images do not have any corresponding label.
-        if os.path.exists(os.path.join(self.data_dir, 's2_l2a/s2a', self.images[index][0])):
-            img_path = os.path.join(self.data_dir, 's2_l2a/s2a', self.images[index][0])
+        if self.imagery == "S2 L2A" or self.imagery == "all":
+            # Find the corresponding L2A product using the index of the L1C
+            s2a_timestamps = []
+            for s2a_timestamp in os.listdir(os.path.join(self.data_dir, 's2_l2a/s2a', tile)):
+                s2a_timestamps.append(s2a_timestamp)
+            s2a = s2a_timestamps[timestamp_index]
+
+            img_path = os.path.join(self.data_dir, 's2_l2a/s2a', tile, s2a)
             if self.selection == 'rgb':
                 b02 = self.image_loader(os.path.join(img_path, 'B2.tif'))
                 b03 = self.image_loader(os.path.join(img_path, 'B3.tif'))
@@ -136,6 +153,8 @@ class SSL4EOS12MLDataset(BaseDataset):
                     loaded_bands.append(arr)
                 s2a_image = np.stack(loaded_bands)
             elif self.selection == 'bands':
+                if self.bands_s2 == None:
+                    print("The config must contain a bands_s2 field with a list of chosen bands")
                 s2_bands = ["B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B10","B11","B12"] 
                 band_filenames = {
                     "B01": "B1.tif",  "B02": "B2.tif",  "B03": "B3.tif",
@@ -161,30 +180,41 @@ class SSL4EOS12MLDataset(BaseDataset):
             # normalize image
             img_min, img_max = s2a_image.min(), s2a_image.max()
             s2a_image = (s2a_image - img_min) / (img_max - img_min + 1e-8)
-        else: # the s2c image has no correpsonding s2a image
-            s2a_image = np.zeros((3, 264, 264))
 
         # Sentinel-1
-        if os.path.exists(os.path.join(self.data_dir, 's1/s1', self.images[index][0])):
-            img_path = os.path.join(self.data_dir, 's1/s1', self.images[index][0])
-            if self.selection == 'rgb':
+        if self.imagery == "S1" or self.imagery == "all":
+            # Find the corresponding S1 product using the index of the S2 L1C
+            s1_timestamps = []
+            for s1_timestamp in os.listdir(os.path.join(self.data_dir, 's1/s1', tile)):
+                s1_timestamps.append(s1_timestamp.split('_')[4]) # keep the acquisition date only to have a similar ordering as S2 products
+            s1 = s1_timestamps[timestamp_index]
+            for s1_timestamp in os.listdir(os.path.join(self.data_dir, 's1/s1', tile)):
+                if fnmatch.fnmatch(s1_timestamp, f"*{s1}*"):
+                    s1_path = s1_timestamp
+
+            img_path = os.path.join(self.data_dir, 's1/s1', tile, s1_path)
+            if self.selection == 'rgb': # the bands will be are vv, vh and vv/vh
                 vv = self.image_loader(os.path.join(img_path, 'VV.tif'))
                 vh = self.image_loader(os.path.join(img_path, 'VH.tif'))
                 vv_vh = np.array(vv/vh)
                 s1_image = np.stack((vh,vv,vv_vh))
+            elif self.selection == 'all':
+                vv = self.image_loader(os.path.join(img_path, 'VV.tif'))
+                vh = self.image_loader(os.path.join(img_path, 'VH.tif'))
+                s1_image = np.stack((vh,vv))
             elif self.selection == 'bands':
+                if self.bands_s1 == None:
+                    print("The config must contain a bands_s1 field with a list of chosen bands")
                 s1_bands = ["VV","VH"]
                 for band in self.bands_s1:
                     if band not in s1_bands:
                         print("The bands must be valid Sentinel-1 bands, i.e. one of VV and VH")
                         break
-                loaded_bands = [self.image_loader(os.path.join(img_path, band_filenames[band])) for band in self.bands_s1]
+                loaded_bands = [self.image_loader(os.path.join(img_path, f"{band}.tif")) for band in self.bands_s1]
                 s1_image = np.stack(loaded_bands)
             # normalize image
             img_min, img_max = s1_image.min(), s1_image.max()
             s1_image = (s1_image - img_min) / (img_max - img_min + 1e-8)
-        else: # the s2c image has no correpsonding s1 image
-            s1_image = np.zeros((3, 264, 264))
 
         if self.imagery == 'S2 L2A':
             img = s2a_image.transpose(1,2,0)
@@ -192,8 +222,8 @@ class SSL4EOS12MLDataset(BaseDataset):
             img = s2c_image.transpose(1,2,0)
         elif self.imagery == 'S1':
             img = s1_image.transpose(1,2,0)
-        elif self.imagery == 'all':
-            img = [s2a_image.transpose(1,2,0),s2c_image.transpose(1,2,0),s1_image.transpose(1,2,0)]
+        elif self.imagery == 'all': # returns S1 and S2 L2A
+            img = np.dstack((s1_image.transpose(1,2,0), s2a_image.transpose(1,2,0)))
         
         if self.transform:
             img = self.transform(img)
@@ -262,26 +292,24 @@ class SSL4EOS12MLDataset(BaseDataset):
         return fig
     
     def show_image(self, index):
+        if self.selection != "rgb":
+            print("The selection parameter must be set to rgb for visualization")
         labels_list = list(compress(self.labels, self[index][1]))
         if self.imagery == 'all':
-            fig, axes = plt.subplots(1, 3, figsize=(18, 6))
+            fig, axes = plt.subplots(1, 2, figsize=(16, 8))
             fig.suptitle(
             f"Image with index {index} from the dataset {self.get_name()}, with labels:\n"
             f"{', '.join(labels_list)}",
             fontsize=14,
             )
 
-            axes[0].imshow(self[index][0][0])
-            axes[0].set_title('Sentinel-2 L2A', fontsize=12)
+            axes[0].imshow(self[index][0][:,:,:3])
+            axes[0].set_title('Sentinel-1', fontsize=12)
             axes[0].axis("off")
 
-            axes[1].imshow(self[index][0][1])
-            axes[1].set_title('Sentinel-2 L1C', fontsize=12)
+            axes[1].imshow(self[index][0][:,:,3:])
+            axes[1].set_title('Sentinel-2 L2A', fontsize=12)
             axes[1].axis("off")
-
-            axes[2].imshow(self[index][0][2])
-            axes[2].set_title('Sentinel-1', fontsize=12)
-            axes[2].axis("off")
         else: 
             fig = plt.figure(figsize=(8, 6))
             plt.title(
