@@ -223,8 +223,23 @@ class SSL4EOS12MLDataset(BaseDataset):
         elif self.imagery == 'S1':
             img = s1_image.transpose(1,2,0)
         elif self.imagery == 'all': # returns S1 and S2 L2A
-            img = np.dstack((s1_image.transpose(1,2,0), s2a_image.transpose(1,2,0)))
-        
+            s1_t = s1_image.transpose(1, 2, 0)
+            s2_t = s2a_image.transpose(1, 2, 0)
+            # Images do not always have the exact same size (few pixels difference)
+            # Find the maximum height and width
+            max_h = max(s1_t.shape[0], s2_t.shape[0])
+            max_w = max(s1_t.shape[1], s2_t.shape[1])
+            # Calculate padding required (top, bottom), (left, right), (channels)
+            pad_s1 = ((0, max_h - s1_t.shape[0]), (0, max_w - s1_t.shape[1]), (0, 0))
+            pad_s2 = ((0, max_h - s2_t.shape[0]), (0, max_w - s2_t.shape[1]), (0, 0))
+            # Apply padding if necessary
+            if pad_s1[0][1] > 0 or pad_s1[1][1] > 0:
+                s1_t = np.pad(s1_t, pad_s1, mode='constant', constant_values=0)
+            if pad_s2[0][1] > 0 or pad_s2[1][1] > 0:
+                s2_t = np.pad(s2_t, pad_s2, mode='constant', constant_values=0)
+                
+            img = np.dstack((s1_t, s2_t))
+
         if self.transform:
             img = self.transform(img)
         target = self.images[index][1]
