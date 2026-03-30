@@ -46,8 +46,56 @@ class BrazilDAMDataset(BaseDataset):
 
         """
 
-        # considering only Sentinel-2 or unpaired Sentinel-2 and Landsat 8
-        if self.imagery == 'sentinel' or self.imagery == 'sentinel and landsat unpaired':
+        # consider only Sentinel-2 
+        if self.imagery == 'sentinel':
+            img = image_loader(self.data[index][0][0])
+            satellite = self.data[index][1]
+            if self.selection == "rgb":
+                img = img[:,:,1:4]
+            elif self.selection == "all":
+                img = img
+            elif self.selection == "bands": 
+                if self.bands_s2 == None:
+                    print("The config must contain a bands_s2 field with a list of chosen bands")
+                idx = []
+                s2_bands = ["B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B10","B11","B12"]
+                for b in self.bands_s2:
+                    if b not in s2_bands:
+                        print("The bands must be valid Sentinel-2 bands, i.e. one of B01, B02, B03, B04, B05, B06, B07, B08, B8A, B09, B10, B11, B12")
+                        break
+                    else:
+                        idx.append(s2_bands.index(b))
+                img = img[:,:,idx]
+            # normalize the image
+            img = (img - img.min()) / (img.max() - img.min() + 1e-8)
+
+
+        # consider only Landsat 8
+        elif self.imagery == 'landsat':
+            img = image_loader(self.data[index][0][0])
+            satellite = self.data[index][1]
+            if self.selection == "rgb":
+                img = img[:,:,1:4]
+            elif self.selection == "all":
+                img = img
+            elif self.selection == "bands": 
+                if self.bands_l8 == None:
+                    print("The config must contain a bands_l8 field with a list of chosen bands")
+                idx = []
+                l8_bands = ["B01","B02","B03","B04","B05","B06","B07","B08","B09","B10","B11"]
+                for b in self.bands_l8:
+                    if b not in l8_bands:
+                        print("The bands must be valid Landsat 8 bands, i.e. one of B01, B02, B03, B04, B05, B06, B07, B08, B09, B10, B11")
+                        break
+                    else:
+                        idx.append(l8_bands.index(b))
+                img = img[:,:,idx]
+            # normalize the image
+            img = (img - img.min()) / (img.max() - img.min() + 1e-8)
+
+
+        # consider unpaired Sentinel-2 and Landsat 8
+        elif self.imagery == 'sentinel and landsat unpaired':
             img = image_loader(self.data[index][0][0])
             satellite = self.data[index][1]
             if satellite == "sentinel": 
@@ -90,7 +138,8 @@ class BrazilDAMDataset(BaseDataset):
             img_min, img_max = img.min(), img.max()
             img = (img - img_min) / (img_max - img_min + 1e-8)
 
-        # considering S2 and L8 pairs where available
+
+        # consider S2 and L8 pairs where available
         if self.imagery == 'sentinel and landsat paired':
             s2_img = image_loader(os.path.join(self.data_dir, "sentinel", self.data[index][0][0]))
             if self.selection == "rgb":
@@ -161,6 +210,9 @@ class BrazilDAMDataset(BaseDataset):
                     if self.imagery == 'sentinel':
                         if satellite == "sentinel":
                             data.append((item, satellite))
+                    elif self.imagery == 'landsat':
+                        if satellite == 'landsat':
+                            data.append((item, satellite))
                     elif self.imagery == 'sentinel and landsat unpaired':
                         data.append((item, satellite))
                     elif self.imagery == 'sentinel and landsat paired':
@@ -209,7 +261,7 @@ class BrazilDAMDataset(BaseDataset):
         if self.selection != 'rgb':
             print('The selection parameter must be set to rgb for image visualization')
 
-        if self.imagery == 'sentinel' or self.imagery == 'sentinel and landsat unpaired':
+        if self.imagery == 'sentinel' or self.imagery == 'landsat' or self.imagery == 'sentinel and landsat unpaired':
             label = self.labels[self[index][1]]
             fig = plt.figure(figsize=(8, 6))
             plt.title(

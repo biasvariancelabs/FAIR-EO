@@ -28,7 +28,7 @@ class Sentinel2CloudCoverSegmentationDataset(SemanticSegmentationDataset):
         self.data_dir = self.config.data_dir
         self.selection = self.config.selection
         self.csv_file = self.config.csv_file
-        self.bands = self.config.bands
+        self.bands_s2 = self.config.bands_s2
 
     def __getitem__(self, index):
         imageB02 = image_loader(self.images_B02[index])
@@ -40,18 +40,19 @@ class Sentinel2CloudCoverSegmentationDataset(SemanticSegmentationDataset):
             image = np.dstack((imageB02,imageB03,imageB04))/5000
         elif self.selection == 'all': # consider all 4 channels
             image = np.dstack((imageB02,imageB03,imageB04,imageB08))/5000
-        elif self.selection == "bands": # the config must contain a self.bands field with a list of chosen bands
+        elif self.selection == "bands":
+            if self.bands_s2 == None:
+                print("The config must contain a bands_s2 field with a list of chosen bands")
             idx = []
             s2_bands = ["B02","B03","B04","B08"] # available s2 bands in this dataset
             image = np.dstack((imageB02,imageB03,imageB04,imageB08))/5000
-            for b in self.bands:
+            for b in self.bands_s2:
                 if b not in s2_bands:
                     print("The bands must be valid and available Sentinel-2 bands, i.e. one of B02, B03, B04, B08")
                     break
                 else:
                     idx.append(s2_bands.index(b))
             image = image[:,:,idx]
-
 
         mask = image_loader(self.masks[index])
         masks = [(mask == v) for v, label in enumerate(self.labels)]

@@ -5,6 +5,7 @@ import pandas as pd
 from matplotlib.patches import Patch
 import seaborn as sns
 import csv
+from skimage.transform import resize
 
 from ..utils import image_loader
 from .schemas import PASTISHDSchema
@@ -77,80 +78,111 @@ class PASTISHDDataset(SemanticSegmentationDataset):
         self.bands_s1 = self.config.bands_s1
 
     def __getitem__(self, index):
-        id = self.data[index]
         # the data contains only one SPOT image per patch but time series for S2 and S1
-        spot_image = image_loader(os.path.join(self.data_dir, "DATA_SPOT", "PASTIS_SPOT6_RVB_1M00_2019",f"SPOT6_RVB_1M00_2019_{id}.tif"))
-        s2_image = np.load(os.path.join(self.data_dir, "DATA_S2", f"S2_{id}.npy"))
-        s1a_image = np.load(os.path.join(self.data_dir, "DATA_S1A", f"S1A_{id}.npy"),allow_pickle=True)
-        s1d_image = np.load(os.path.join(self.data_dir, "DATA_S1D", f"S1D_{id}.npy"))
-        mask = np.load(os.path.join(self.data_dir, "ANNOTATIONS", f"TARGET_{id}.npy"))
+        id = self.data[index]
+        
+        # SPOT image
+        spot_image = image_loader(os.path.join(self.data_dir, "DATA_SPOT", "PASTIS_SPOT6_RVB_1M00_2019",f"SPOT6_RVB_1M00_2019_{id}.tif")) # shape = (height, width, band)
 
-        image_list = []
-        image_list_s1a = []
-        image_list_s1d = []
-        for t in range(s2_image.shape[0]): # S2 has 10 bands
-            if self.selection == "rgb":
-                time_step_image = np.transpose(s2_image[t, [2,1,0]], (1, 2, 0))
-            elif self.selection == "all":
-                time_step_image = np.transpose(s2_image[t, :], (1, 2, 0))
-            elif self.selection == "bands": # the config must contain a self.bands field with a list of chosen bands
-                idx = []
-                s2_bands = ["B02","B03","B04","B05","B06","B07","B08","B8A","B11","B12"]
-                for b in self.bands_s2:
-                    if b not in s2_bands:
-                        print("The bands must be valid Sentinel-2 bands, i.e. one of B02, B03, B04, B05, B06, B07, B08, B8A, B11, B12")
-                        break
-                    else:
-                        idx.append(s2_bands.index(b))
-                time_step_image = np.transpose(s2_image[t, idx], (1, 2, 0))
+        # Sentinel-2
+        if self.imagery == "S2" or self.imagery == "all":
+            s2_image = np.load(os.path.join(self.data_dir, "DATA_S2", f"S2_{id}.npy")) # (timestamp, band, height, width)
+            image_list_s2 = []
+            for t in range(s2_image.shape[0]): # S2 has 10 bands
+                if self.selection == "rgb":
+                    time_step_image = np.transpose(s2_image[t, [2,1,0]], (1, 2, 0))
+                elif self.selection == "all":
+                    time_step_image = np.transpose(s2_image[t, :], (1, 2, 0))
+                elif self.selection == "bands": 
+                    if self.bands_s2 == None:
+                        print("The config must contain a bands_s2 field with a list of chosen bands")
+                    idx = []
+                    s2_bands = ["B02","B03","B04","B05","B06","B07","B08","B8A","B11","B12"]
+                    for b in self.bands_s2:
+                        if b not in s2_bands:
+                            print("The bands must be valid Sentinel-2 bands, i.e. one of B02, B03, B04, B05, B06, B07, B08, B8A, B11, B12")
+                            break
+                        else:
+                            idx.append(s2_bands.index(b))
+                    time_step_image = np.transpose(s2_image[t, idx], (1, 2, 0))
 
-            image_list.append(time_step_image)
-        s2 = np.array(image_list)
+                image_list_s2.append(time_step_image)
+            s2 = np.array(image_list_s2) # (time, height, width, band)
 
-        for t in range(s1a_image.shape[0]): # S1 has VV, VH and VV/VH bands
-            if self.selection == "rgb" or self.selection == "all":
-                time_step_image_s1a = np.transpose(s1a_image[t, 0:3], (1, 2, 0))
-            elif self.selection == "bands": # the config must contain a self.bands field with a list of chosen bands
-                idx = []
-                s1_bands = ["VV","VH","VV/VH"]
-                for b in self.bands_s1:
-                    if b not in s1_bands:
-                        print("The bands must be valid and available Sentinel-1 bands, i.e. one of VV, VH, VV/VH")
-                        break
-                    else:
-                        idx.append(s1_bands.index(b))
-                time_step_image_s1a = np.transpose(s1a_image[t, idx], (1, 2, 0)) 
-            image_list_s1a.append(time_step_image_s1a)
-        s1a = np.array(image_list_s1a)
+        # Sentinel-1 ascending
+        if self.imagery == "S1A" or self.imagery == "all":
+            s1a_image = np.load(os.path.join(self.data_dir, "DATA_S1A", f"S1A_{id}.npy"),allow_pickle=True) # (timestamp, band, height, width)
+            image_list_s1a = []
+            for t in range(s1a_image.shape[0]): # S1 has VV, VH and VV/VH bands
+                if self.selection == "rgb" or self.selection == "all":
+                    time_step_image_s1a = np.transpose(s1a_image[t, 0:3], (1, 2, 0))
+                elif self.selection == "bands": 
+                    if self.bands_s1 == None:
+                        print("The config must contain a bands_s1 field with a list of chosen bands")
+                    idx = []
+                    s1_bands = ["VV","VH","VV/VH"]
+                    for b in self.bands_s1:
+                        if b not in s1_bands:
+                            print("The bands must be valid and available Sentinel-1 bands, i.e. one of VV, VH, VV/VH")
+                            break
+                        else:
+                            idx.append(s1_bands.index(b))
+                    time_step_image_s1a = np.transpose(s1a_image[t, idx], (1, 2, 0)) 
+                image_list_s1a.append(time_step_image_s1a)
+            s1a = np.array(image_list_s1a) # (time, height, width, band)
 
-        for t in range(s1d_image.shape[0]): # S1 has VV, VH and VV/VH bands
-            if self.selection == "rgb" or self.selection == "all":
-                time_step_image_s1d = np.transpose(s1d_image[t, 0:3], (1, 2, 0))
-            elif self.selection == "bands": # the config must contain a self.bands field with a list of chosen bands
-                idx = []
-                s1_bands = ["VV","VH","VV/VH"]
-                for b in self.bands_s1:
-                    if b not in s1_bands:
-                        print("The bands must be valid and available Sentinel-1 bands, i.e. one of VV, VH, VV/VH")
-                        break
-                    else:
-                        idx.append(s1_bands.index(b))
-                time_step_image_s1d = np.transpose(s1d_image[t, idx], (1, 2, 0)) 
-            image_list_s1d.append(time_step_image_s1d)
-        s1d = np.array(image_list_s1d)
-
-        timeseries = {
-                "sentinel1a": s1a,
-                "sentinel1d": s1d,
-                "sentinel2": s2
-            }
+        # Sentinel-1 descending
+        if self.imagery == "S1D" or self.imagery == "all":
+            s1d_image = np.load(os.path.join(self.data_dir, "DATA_S1D", f"S1D_{id}.npy")) # (timestamp, band, height, width)
+            image_list_s1d = []
+            for t in range(s1d_image.shape[0]): # S1 has VV, VH and VV/VH bands
+                if self.selection == "rgb" or self.selection == "all":
+                    time_step_image_s1d = np.transpose(s1d_image[t, 0:3], (1, 2, 0))
+                elif self.selection == "bands": 
+                    if self.bands_s1 == None:
+                        print("The config must contain a bands_s1 field with a list of chosen bands")
+                    idx = []
+                    s1_bands = ["VV","VH","VV/VH"]
+                    for b in self.bands_s1:
+                        if b not in s1_bands:
+                            print("The bands must be valid and available Sentinel-1 bands, i.e. one of VV, VH, VV/VH")
+                            break
+                        else:
+                            idx.append(s1_bands.index(b))
+                    time_step_image_s1d = np.transpose(s1d_image[t, idx], (1, 2, 0)) 
+                image_list_s1d.append(time_step_image_s1d)
+            s1d = np.array(image_list_s1d) # (time, height, width, band)
     
-        if self.imagery == 'all':
-            image = np.array([spot_image, timeseries])
+        if self.imagery == 'all': # considers only the first timestamp for each patch
+            # resize the spot image so the shapes match for concatenation
+            reference = np.load(os.path.join(self.data_dir, "DATA_S2", f"S2_{id}.npy"))[0,0,:,:] # S2 B02 of timestep 1
+            target_shape = reference.shape
+            if spot_image.shape != target_shape:
+                spot_image = resize(spot_image, target_shape, order=1, preserve_range=True).astype(spot_image.dtype)
+
+            # normalize images
+            s1a = s1a[0,:,:,:] # first time step
+            s1a = (s1a - s1a.min()) / (s1a.max() - s1a.min() + 1e-8)
+            s2 = s2[0,:,:,:] # first time step
+            s2 = (s2 - s2.min()) / (s2.max() - s2.min() + 1e-8)
+            spot_image = (spot_image - spot_image.min()) / (spot_image.max() - spot_image.min() + 1e-8)
+
+            image = np.dstack((s1a, s2, spot_image))
+            
+        elif self.imagery == 'S2':
+            image = s2
+        elif self.imagery == 'S1A':
+            image = s1a
+        elif self.imagery == 'S1D':
+            image = s1d
         elif self.imagery == 'SPOT':
             image = spot_image
-            if self.transform:
-                image = self.transform(image)
+            
+        if self.transform:
+            image = self.transform(image)
+
+        # mask image
+        mask = np.load(os.path.join(self.data_dir, "ANNOTATIONS", f"TARGET_{id}.npy"))
 
         if len(mask.shape) == 3:
             semantic_mask = mask[0]
@@ -185,32 +217,21 @@ class PASTISHDDataset(SemanticSegmentationDataset):
         if csv_file:
             self.data = []
             with open(csv_file, "r", encoding="utf-8-sig") as f:
-                        reader = csv.reader(f)
-                        next(reader, None) # skip header
-                        for row in reader:
-                            file_name = row[0][7 : -4]  
-                            self.data.append(file_name)
+                reader = csv.reader(f)
+                next(reader, None) # skip header
+                for row in reader:
+                    file_name = row[0][7 : -4]  
+                    self.data.append(file_name)
 
     def __len__(self):
         return len(self.data)
 
     def show_image(self, index, show_title=False):
         # Shows the first image of the time series
-        id = self.data[index]
-        # Check which modalities are available for this ID
-        available_modalities = []
-        modality_paths = {
-            'S2': os.path.join(self.data_dir, "DATA_S2", f"S2_{id}.npy"),
-            'S1A': os.path.join(self.data_dir, "DATA_S1A", f"S1A_{id}.npy"),
-            'S1D': os.path.join(self.data_dir, "DATA_S1D", f"S1D_{id}.npy"),
-            'SPOT': os.path.join(self.data_dir, "DATA_SPOT", "PASTIS_SPOT6_RVB_1M00_2019", f"SPOT6_RVB_1M00_2019_{id}.tif")
-        }
-
-        for modality, path in modality_paths.items():
-            if os.path.exists(path):
-                available_modalities.append((modality, path))
-
-        _, mask = self.__getitem__(index)
+        if self.selection != "rgb":
+            print("The selection parameter must be set to rgb for visualization")
+       
+        image, mask = self[index]
 
         img_mask = np.zeros([mask.shape[0], mask.shape[1], 3], np.uint8)
         legend_elements = []
@@ -223,43 +244,61 @@ class PASTISHDDataset(SemanticSegmentationDataset):
             )
             img_mask[np.where(mask[:, :, i] == 1)] = self.color_mapping[i]
 
-        n_modalities = len(available_modalities)
-        fig_width = 4 * (n_modalities + 1)
-        fig = plt.figure(figsize=(fig_width, 6))
+        if self.imagery == "SPOT":
 
-        fig.legend(handles=legend_elements, bbox_to_anchor=(0.1, 0.9, 0.8, 0.2),
-                  ncol=min(4, len(self.labels)), mode='expand', loc='lower left', prop={'size': 12})
-
-        for i, (modality, path) in enumerate(available_modalities):
-            plt.subplot(1, n_modalities + 1, i + 1)
-
-            if modality == 'SPOT':
-                img_data = image_loader(path)
-                plt.imshow(img_data)
-
-            elif modality == 'S2':
-                img_data = np.load(path)[0]
-                img_display = np.transpose(img_data, (1, 2, 0))
-                img_display = img_display[:,:,[2,1,0]]
-
-                if img_display.max() > img_display.min():
-                    img_display = (img_display - img_display.min()) / (img_display.max() - img_display.min())
-                plt.imshow(img_display)
-
-            elif modality in ['S1A', 'S1D']:
-                img_data = np.load(path)[0]
-                img_display = img_data[0]
-                plt.imshow(img_display, cmap='gray')
-
+            fig = plt.figure(figsize=(10, 8))
+            fig.legend(handles=legend_elements, bbox_to_anchor=(0.1, 0.8, 0.8, 0.2), ncol=3, mode='expand',
+                    loc='lower left', prop={'size': 12})
+            plt.subplot(1, 2, 1)
+            plt.imshow(image)
             plt.axis("off")
-            plt.title(f"{modality}")
+            plt.subplot(1, 2, 2)
+            plt.imshow(img_mask)
+            plt.axis("off")
+            fig.tight_layout()
+            plt.show()
 
-        plt.subplot(1, n_modalities + 1, n_modalities + 1)
-        plt.imshow(img_mask)
-        plt.axis("off")
-        plt.title("Semantic Mask")
-        fig.tight_layout()
-        plt.show()
+        elif self.imagery == "S2" or self.imagery == "S1A" or self.imagery == "S1D":
+            image = image[0,:,:,:] # first time step
+            image = (image - image.min()) / (image.max() - image.min() + 1e-8)
+            image = image.astype(np.float64)
+
+            fig = plt.figure(figsize=(10, 8))
+            fig.legend(handles=legend_elements, bbox_to_anchor=(0.1, 0.8, 0.8, 0.2), ncol=3, mode='expand',
+                    loc='lower left', prop={'size': 12})
+            plt.subplot(1, 2, 1)
+            plt.imshow(image) 
+            plt.axis("off")
+            plt.subplot(1, 2, 2)
+            plt.imshow(img_mask)
+            plt.axis("off")
+            fig.tight_layout()
+            plt.show()
+
+        elif self.imagery == "all":
+            fig, axes = plt.subplots(1, 4, figsize=(16, 8))
+            fig.legend(handles=legend_elements, bbox_to_anchor=(0.2, 0.8, 0.6, 0.2), ncol=3, mode='expand',
+                loc='lower left', prop={'size': 12})
+
+            axes[0].imshow(image[:,:,:3])
+            axes[0].set_title('Sentinel-1', fontsize=12)
+            axes[0].axis("off")
+
+            axes[1].imshow(image[:,:,3:6])
+            axes[1].set_title('Sentinel-2', fontsize=12)
+            axes[1].axis("off")
+
+            axes[2].imshow(image[:,:,6:])
+            axes[2].set_title('SPOT', fontsize=12)
+            axes[2].axis("off")
+
+            axes[3].imshow(img_mask)
+            axes[3].set_title('Mask', fontsize=12)
+            axes[3].axis("off")
+
+            fig.tight_layout()
+            plt.show()
+
         return fig
 
     def data_distribution_table(self):
@@ -286,11 +325,13 @@ class PASTISHDDataset(SemanticSegmentationDataset):
         return fig
     
     def show_timeseries(self, index, longitude, latitude):
-        self.selection = "all"
-        self.imgery = "all"
+        if self.selection != "all":
+            print("The selection parameter should be set to 'all' for time series visualization.")
+  
+        if self.imagery == "SPOT" or self.imagery == "all":
+            print("The imagery parameter should be set to S1A, S1D or S2. SPOT imagery does not contain multitemporal data.")
         
-        image, mask = self[index]
-        timeseries = image[1]
+        timeseries, mask = self[index]
 
         crop = mask[longitude, latitude]
         crop_name = "Unknown"
@@ -299,55 +340,36 @@ class PASTISHDDataset(SemanticSegmentationDataset):
                 crop_name = k
                 break
 
-        s1a = timeseries["sentinel1a"] 
-        s1d = timeseries["sentinel1d"] 
-        s2 = timeseries["sentinel2"] 
-
-        time_range_s1a = range(len(s1a))
-        time_range_s1d = range(len(s1d))
-        time_range_s2 = range(len(s2))
-
-        # extract S1A bands for a specific pixel
-        s1a_pixel = []
-        for b in range(3):
-            s1a_band_series = [s1a[i][longitude, latitude, b] for i in time_range_s1a]
-            s1a_pixel.append(s1a_band_series)
-
-        # extract S1D bands for a specific pixel
-        s1d_pixel = []
-        for b in range(3):
-            s1d_band_series = [s1d[i][longitude, latitude, b] for i in time_range_s1d]
-            s1d_pixel.append(s1d_band_series)
-
-        # extract Sentinel-2 bands
-        s2_pixel = []
-        for b in range(10):
-            s2_band_series = [s2[i][longitude, latitude, b] for i in time_range_s2]
-            s2_pixel.append(s2_band_series)
+        time_range = range(len(timeseries))
 
         fig, ax = plt.subplots(figsize=(10, 6))
         ax.set_title(f"Time series with index {index} from the region with pixel coordinates ({longitude},{latitude}), with label {crop_name}\n")
 
-        for i, s1a_band_series in enumerate(s1a_pixel):
-            if i == 0:
-                band = 'VV'
-            elif i == 1:
-                band = 'VH'
-            else: 
-                band = 'VV/VH'
-            ax.plot(time_range_s1a, s1a_band_series, label=f"S1A {band}")
+        if self.imagery == 'S1A' or self.imagery == 'S1D':
+            # extract S1A bands for a specific pixel
+            s1_pixel = []
+            for b in range(3):
+                s1_band_series = [timeseries[i][longitude, latitude, b] for i in time_range]
+                s1_pixel.append(s1_band_series)
 
-        for i, s1d_band_series in enumerate(s1d_pixel):
-            if i == 0:
-                band = 'VV'
-            elif i == 1:
-                band = 'VH'
-            else: 
-                band = 'VV/VH'
-            ax.plot(time_range_s1d, s1d_band_series, label=f"S1D {band}")
+            for i, s1_band_series in enumerate(s1_pixel):
+                if i == 0:
+                    band = 'VV'
+                elif i == 1:
+                    band = 'VH'
+                else: 
+                    band = 'VV/VH'
+                ax.plot(time_range, s1_band_series, label=f"S1A {band}")
 
-        for i, s2_band_series in enumerate(s2_pixel):
-            ax.plot(time_range_s2, s2_band_series, label=f"S2-B{i+1}", alpha=0.5)
+        elif self.imagery == 'S2':
+            # extract Sentinel-2 bands
+            s2_pixel = []
+            for b in range(10):
+                s2_band_series = [timeseries[i][longitude, latitude, b] for i in time_range]
+                s2_pixel.append(s2_band_series)
+
+            for i, s2_band_series in enumerate(s2_pixel):
+                ax.plot(time_range, s2_band_series, label=f"S2-B{i+1}", alpha=0.5)
 
         ax.set_xlabel("Time step")
         ax.set_ylabel("Pixel value")

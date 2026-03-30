@@ -32,7 +32,7 @@ class AgriFieldNetDataset(SemanticSegmentationDataset):
         self.data_dir = self.config.data_dir
         self.selection = self.config.selection
         self.csv_file = self.config.csv_file
-        self.bands = self.config.bands
+        self.bands_s2 = self.config.bands_s2
 
     def __getitem__(self, index):
         if self.selection == "rgb":
@@ -56,10 +56,12 @@ class AgriFieldNetDataset(SemanticSegmentationDataset):
             imageB12 = image_loader(self.imagesB12[index])
             image = np.dstack((imageB01,imageB02,imageB03,imageB04, imageB05,imageB06,imageB07,imageB08,imageB8A,imageB09,imageB11,imageB12))
 
-            if self.selection == "bands": # the config must contain a self.bands field with a list of chosen bands
+            if self.selection == "bands": 
+                if self.bands_s2 == None:
+                    print("The config must contain a bands_s2 field with a list of chosen bands")
                 idx = []
                 s2_bands = ["B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B11","B12"]
-                for b in self.bands:
+                for b in self.bands_s2:
                     if b not in s2_bands:
                         print("The bands must be valid and available Sentinel-2 bands, i.e. one of B01, B02, B03, B04, B05, B06, B07, B08, B8A, B09, B11, B12")
                         break

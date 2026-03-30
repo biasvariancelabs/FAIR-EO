@@ -7,7 +7,7 @@ import csv
 from matplotlib.patches import Patch
 from PIL import Image
 
-from .semantic_segmentation import BaseDataset
+from ..base import BaseDataset
 from .schemas import OmbriaSchema
 from ..utils import image_loader
 
@@ -51,12 +51,16 @@ class OMBRIADataset(BaseDataset):
             pre_image = image_loader(os.path.join(self.data_dir, f'Ombria{imagery}', split, 'BEFORE', f'{imagery}_before_{img_id}.png'))
             if self.selection == "rgb": # (256 x 256 x 3)
                 pre_image = np.asarray(Image.fromarray(pre_image).convert('RGB'))
+            elif self.selection == "all":
+                pre_image = pre_image # original 1 band image
             #normalize image for better visualization
             pre_image = (pre_image - pre_image.min()) / (pre_image.max() - pre_image.min() + 1e-8)
 
             post_image = image_loader(os.path.join(self.data_dir, f'Ombria{imagery}', split, 'AFTER', f'{imagery}_after_{img_id}.png'))
             if self.selection == "rgb": # (256 x 256 x 3)
                 post_image = np.asarray(Image.fromarray(post_image).convert('RGB'))
+            elif self.selection == "all":
+                pre_image = pre_image # original 1 band image
             #normalize image
             post_image = (post_image - post_image.min()) / (post_image.max() - post_image.min() + 1e-8)
 

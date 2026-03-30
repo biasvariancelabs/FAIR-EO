@@ -7,7 +7,7 @@ import csv
 from matplotlib.patches import Patch
 from skimage.transform import resize
 
-from .semantic_segmentation import BaseDataset
+from ..base import BaseDataset
 from .schemas import MSBCSchema
 from ..utils import image_loader
 
@@ -66,77 +66,81 @@ class MSOSCDDataset(BaseDataset):
         rgb_1 = image_loader(os.path.join(self.data_dir, mode, 'rgb1', f'{img_id}.tif'))
         rgb_2 = image_loader(os.path.join(self.data_dir, mode, 'rgb2', f'{img_id}.tif'))
 
+        if self.imagery == "s1" or self.imagery == "all":
+            # SAR has 4 bands. The first 2 bands are VV, VH of time 1, and the later 2 bands are VV, VH of time 2.
+            # time 1
+            sar_vv_1 = image_loader(os.path.join(self.data_dir, mode, 'sar', f'{img_id}.tif'))[:,:,0]
+            sar_vh_1 = image_loader(os.path.join(self.data_dir, mode, 'sar', f'{img_id}.tif'))[:,:,1]
+            sar_vv_vh_1 = sar_vv_1/sar_vh_1
 
-        # SAR has 4 bands. The first 2 bands are VV, VH of time 1, and the later 2 bands are VV, VH of time 2.
-        # time 1
-        sar_vv_1 = image_loader(os.path.join(self.data_dir, mode, 'sar', f'{img_id}.tif'))[:,:,0]
-        sar_vh_1 = image_loader(os.path.join(self.data_dir, mode, 'sar', f'{img_id}.tif'))[:,:,1]
-        sar_vv_vh_1 = sar_vv_1/sar_vh_1
+            # time 2
+            sar_vv_2 = image_loader(os.path.join(self.data_dir, mode, 'sar', f'{img_id}.tif'))[:,:,2]
+            sar_vh_2 = image_loader(os.path.join(self.data_dir, mode, 'sar', f'{img_id}.tif'))[:,:,3]
+            sar_vv_vh_2 = sar_vv_2/sar_vh_2
 
-        # time 2
-        sar_vv_2 = image_loader(os.path.join(self.data_dir, mode, 'sar', f'{img_id}.tif'))[:,:,2]
-        sar_vh_2 = image_loader(os.path.join(self.data_dir, mode, 'sar', f'{img_id}.tif'))[:,:,3]
-        sar_vv_vh_2 = sar_vv_2/sar_vh_2
+            if self.selection == "rgb":
+                sar_1 = np.dstack((sar_vv_1, sar_vh_1, sar_vv_vh_1))
+                sar_2 = np.dstack((sar_vv_2, sar_vh_2, sar_vv_vh_2))
+                # normalize image
+                sar_1 = (sar_1 - sar_1.min()) / (sar_1.max() - sar_1.min() + 1e-8)
+                sar_2 = (sar_2 - sar_2.min()) / (sar_2.max() - sar_2.min() + 1e-8)
+            elif self.selection == "all":
+                sar_1 = np.dstack((sar_vv_1, sar_vh_1))
+                sar_2 = np.dstack((sar_vv_2, sar_vh_2))
+                # normalize image
+                sar_1 = (sar_1 - sar_1.min()) / (sar_1.max() - sar_1.min() + 1e-8)
+                sar_2 = (sar_2 - sar_2.min()) / (sar_2.max() - sar_2.min() + 1e-8)
+            elif self.selection == "bands":
+                if self.bands_s1 == None:
+                    print("The config must contain a bands_s1 field with a list of chosen bands")
+                sar_1 = np.dstack((sar_vv_1, sar_vh_1))
+                sar_2 = np.dstack((sar_vv_2, sar_vh_2))
+                idx = []
+                s1_bands = ["VV","VH"]
+                for b in self.bands_s1:
+                    if b not in s1_bands:
+                        print("The bands must be valid and available Sentinel-1 bands, i.e. one of VV, VH")
+                        break
+                    else:
+                        idx.append(s1_bands.index(b))
+                sar_1 = sar_1[:,:,idx]
+                sar_2 = sar_2[:,:,idx]
+                # normalize image
+                sar_1 = (sar_1 - sar_1.min()) / (sar_1.max() - sar_1.min() + 1e-8)
+                sar_2 = (sar_2 - sar_2.min()) / (sar_2.max() - sar_2.min() + 1e-8)
 
-        if self.selection == "rgb":
-            sar_1 = np.dstack((sar_vv_1, sar_vh_1, sar_vv_vh_1))
-            sar_2 = np.dstack((sar_vv_2, sar_vh_2, sar_vv_vh_2))
-            # normalize image
-            sar_1 = (sar_1 - sar_1.min()) / (sar_1.max() - sar_1.min() + 1e-8)
-            sar_2 = (sar_2 - sar_2.min()) / (sar_2.max() - sar_2.min() + 1e-8)
-        elif self.selection == "all":
-            sar_1 = np.dstack((sar_vv_1, sar_vh_1))
-            sar_2 = np.dstack((sar_vv_2, sar_vh_2))
-            # normalize image
-            sar_1 = (sar_1 - sar_1.min()) / (sar_1.max() - sar_1.min() + 1e-8)
-            sar_2 = (sar_2 - sar_2.min()) / (sar_2.max() - sar_2.min() + 1e-8)
-        elif self.selection == "bands" and self.bands_s1 != None: # the config must contain a self.bands field with a list of chosen bands
-            sar_1 = np.dstack((sar_vv_1, sar_vh_1))
-            sar_2 = np.dstack((sar_vv_2, sar_vh_2))
-            idx = []
-            s1_bands = ["VV","VH"]
-            for b in self.bands_s1:
-                if b not in s1_bands:
-                    print("The bands must be valid and available Sentinel-1 bands, i.e. one of VV, VH")
-                    break
-                else:
-                    idx.append(s1_bands.index(b))
-            sar_1 = sar_1[:,:,idx]
-            sar_2 = sar_2[:,:,idx]
-            # normalize image
-            sar_1 = (sar_1 - sar_1.min()) / (sar_1.max() - sar_1.min() + 1e-8)
-            sar_2 = (sar_2 - sar_2.min()) / (sar_2.max() - sar_2.min() + 1e-8)
-
-
-        # OPT has 14 bands. The first 7 bands are B2,B3,B4,B8,B8A,B11,B12 of time 1, and the later 7 bands are B2,B3,B4,B8,B8A,B11,B12 of time 2.
-        if self.selection == 'rgb':
-            opt_1 = image_loader(os.path.join(self.data_dir, mode, 'opt', f'{img_id}.tif'))[:,:,:3]
-            opt_2 = image_loader(os.path.join(self.data_dir, mode, 'opt', f'{img_id}.tif'))[:,:,7:10]
-            # normalize images
-            opt_1 = (opt_1 - opt_1.min()) / (opt_1.max() - opt_1.min() + 1e-8)
-            opt_2 = (opt_2 - opt_2.min()) / (opt_2.max() - opt_2.min() + 1e-8)
-        elif self.selection == "all":
-            opt_1 = image_loader(os.path.join(self.data_dir, mode, 'opt', f'{img_id}.tif'))[:,:,:7]
-            opt_2 = image_loader(os.path.join(self.data_dir, mode, 'opt', f'{img_id}.tif'))[:,:,7:14]
-            # normalize images
-            opt_1 = (opt_1 - opt_1.min()) / (opt_1.max() - opt_1.min() + 1e-8)
-            opt_2 = (opt_2 - opt_2.min()) / (opt_2.max() - opt_2.min() + 1e-8)
-        elif self.selection == "bands" and self.bands_s2 != None: # the config must contain a self.bands field with a list of chosen bands
-            opt_1 = image_loader(os.path.join(self.data_dir, mode, 'opt', f'{img_id}.tif'))[:,:,:7]
-            opt_2 = image_loader(os.path.join(self.data_dir, mode, 'opt', f'{img_id}.tif'))[:,:,7:14]
-            idx = []
-            s2_bands = ["B02","B03","B04","B08","B8A","B11","B12"]
-            for b in self.bands_s2:
-                if b not in s2_bands:
-                    print("The bands must be valid Sentinel-2 bands, i.e. one of B02, B03, B04, B08, B8A, B11, B12")
-                    break
-                else:
-                    idx.append(s2_bands.index(b))
-            opt_1 = opt_1[:,:,idx]
-            opt_2 = opt_2[:,:,idx]
-            # normalize images
-            opt_1 = (opt_1 - opt_1.min()) / (opt_1.max() - opt_1.min() + 1e-8)
-            opt_2 = (opt_2 - opt_2.min()) / (opt_2.max() - opt_2.min() + 1e-8)
+        if self.imagery == "s2" or self.imagery == "all":
+            # OPT has 14 bands. The first 7 bands are B2,B3,B4,B8,B8A,B11,B12 of time 1, and the later 7 bands are B2,B3,B4,B8,B8A,B11,B12 of time 2.
+            if self.selection == 'rgb':
+                opt_1 = image_loader(os.path.join(self.data_dir, mode, 'opt', f'{img_id}.tif'))[:,:,:3]
+                opt_2 = image_loader(os.path.join(self.data_dir, mode, 'opt', f'{img_id}.tif'))[:,:,7:10]
+                # normalize images
+                opt_1 = (opt_1 - opt_1.min()) / (opt_1.max() - opt_1.min() + 1e-8)
+                opt_2 = (opt_2 - opt_2.min()) / (opt_2.max() - opt_2.min() + 1e-8)
+            elif self.selection == "all":
+                opt_1 = image_loader(os.path.join(self.data_dir, mode, 'opt', f'{img_id}.tif'))[:,:,:7]
+                opt_2 = image_loader(os.path.join(self.data_dir, mode, 'opt', f'{img_id}.tif'))[:,:,7:14]
+                # normalize images
+                opt_1 = (opt_1 - opt_1.min()) / (opt_1.max() - opt_1.min() + 1e-8)
+                opt_2 = (opt_2 - opt_2.min()) / (opt_2.max() - opt_2.min() + 1e-8)
+            elif self.selection == "bands": 
+                if self.bands_s2 == None:
+                    print("The config must contain a bands_s2 field with a list of chosen bands")
+                opt_1 = image_loader(os.path.join(self.data_dir, mode, 'opt', f'{img_id}.tif'))[:,:,:7]
+                opt_2 = image_loader(os.path.join(self.data_dir, mode, 'opt', f'{img_id}.tif'))[:,:,7:14]
+                idx = []
+                s2_bands = ["B02","B03","B04","B08","B8A","B11","B12"]
+                for b in self.bands_s2:
+                    if b not in s2_bands:
+                        print("The bands must be valid Sentinel-2 bands, i.e. one of B02, B03, B04, B08, B8A, B11, B12")
+                        break
+                    else:
+                        idx.append(s2_bands.index(b))
+                opt_1 = opt_1[:,:,idx]
+                opt_2 = opt_2[:,:,idx]
+                # normalize images
+                opt_1 = (opt_1 - opt_1.min()) / (opt_1.max() - opt_1.min() + 1e-8)
+                opt_2 = (opt_2 - opt_2.min()) / (opt_2.max() - opt_2.min() + 1e-8)
 
 
         mask = image_loader(os.path.join(self.data_dir, mode, 'label', f'{img_id}.tif'))
@@ -156,7 +160,7 @@ class MSOSCDDataset(BaseDataset):
             rgb_1 = (rgb_1 - rgb_1.min()) / (rgb_1.max() - rgb_1.min() + 1e-8)
             rgb_2 = (rgb_2 - rgb_2.min()) / (rgb_2.max() - rgb_2.min() + 1e-8)
 
-            image_1, image_2 = np.dstack((rgb_1, sar_1, opt_1)), np.dstack((rgb_2, sar_2, opt_2))
+            image_1, image_2 = np.dstack((sar_1, opt_1, rgb_1)), np.dstack((sar_2, opt_2, rgb_2))
           
         elif self.imagery == "aerial":
             image_1, image_2 = rgb_1, rgb_2
@@ -205,13 +209,13 @@ class MSOSCDDataset(BaseDataset):
             data = self[index]
             (image_1, image_2), mask = data
 
-            rgb_1 = image_1[:,:,:3]
-            sar_1 = image_1[:,:,3:6]
-            opt_1 = image_1[:,:,6:]
+            sar_1 = image_1[:,:,:3]
+            opt_1 = image_1[:,:,3:6]
+            rgb_1 = image_1[:,:,6:]
 
-            rgb_2 = image_2[:,:,:3]
-            sar_2 = image_2[:,:,3:6]
-            opt_2 = image_2[:,:,6:]
+            sar_2 = image_2[:,:,:3]
+            opt_2 = image_2[:,:,3:6]
+            rgb_2 = image_2[:,:,6:]
 
             # Create mask visualization
             img_mask = np.zeros([mask.shape[0], mask.shape[1], 3], np.uint8)
@@ -236,28 +240,28 @@ class MSOSCDDataset(BaseDataset):
             axes[0].set_title("Mask")
             axes[0].axis("off")
 
-            axes[1].imshow(rgb_1)
-            axes[1].set_title("RGB image t1")
+            axes[1].imshow(sar_1)
+            axes[1].set_title("S1 image t1")
             axes[1].axis("off")
 
-            axes[2].imshow(rgb_2)
-            axes[2].set_title("RGB image t2")
+            axes[2].imshow(sar_2)
+            axes[2].set_title("S1 image t2")
             axes[2].axis("off")
 
-            axes[3].imshow(sar_1)
-            axes[3].set_title("SAR image t1")
+            axes[3].imshow(opt_1)
+            axes[3].set_title("S2 image t1")
             axes[3].axis("off")
 
-            axes[4].imshow(sar_2)
-            axes[4].set_title("SAR image t2")
+            axes[4].imshow(opt_2)
+            axes[4].set_title("S2 image t2")
             axes[4].axis("off")
 
-            axes[5].imshow(opt_1)
-            axes[5].set_title("S2 image t1")
+            axes[5].imshow(rgb_1)
+            axes[5].set_title("RGB image t1")
             axes[5].axis("off")
 
-            axes[6].imshow(opt_2)
-            axes[6].set_title("S2 image t2")
+            axes[6].imshow(rgb_2)
+            axes[6].set_title("RGB image t2")
             axes[6].axis("off")
 
         elif self.imagery != "all":

@@ -9,7 +9,7 @@ import math
 
 from .semantic_segmentation import SemanticSegmentationDataset
 from ..utils import image_loader
-from .schemas import FAIREOSchema
+from .schemas import WHUOHSSchema
 
 """
 The dataset consists of about 90 million manually labeled samples of 7795 Orbita hyperspectral satellite (OHS) 
@@ -29,7 +29,7 @@ class WHUOHSDataset(SemanticSegmentationDataset):
                      [254,127,129],[253,193,191],[253,191,232],[254,1,195],[228,2,169],[166,1,127],[110,2,77],[253,116,219],
                      [162,160,159]] 
     name = "WHU-OHS"
-    schema = FAIREOSchema
+    schema = WHUOHSSchema
 
     def __init__(self, config):
         # now call the constructor to validate the schema and split the data
@@ -37,7 +37,7 @@ class WHUOHSDataset(SemanticSegmentationDataset):
         self.data_dir = self.config.data_dir
         self.selection = self.config.selection
         self.csv_file = self.config.csv_file
-        self.selection = self.config.selection
+        self.bands_ohs = self.config.bands_ohs
 
     def __getitem__(self, index):
         image = image_loader(self.images[index])
@@ -52,6 +52,20 @@ class WHUOHSDataset(SemanticSegmentationDataset):
         # to consider all the 32 bands
         elif self.selection == 'all':
             image = image/10000
+
+        elif self.selection == 'bands':
+            image = image/10000
+            if self.bands_ohs == None:
+                print("The config must contain a bands_ohs field with a list of chosen bands")
+            idx = []
+            ohs_bands = ["B01","B02","B03","B04","B05","B06","B07","B08","B09","B10","B11","B12","B13","B14","B15","B16","B17","B18","B19","B20","B21","B22","B23","B24","B25","B26","B27","B28","B29","B30","B31","B32"]
+            for b in self.bands_ohs:
+                if b not in ohs_bands:
+                    print("The bands must be valid OHS bands, i.e. one of B01, B02, B03, B04, B05, B06, B07, B08, B09, B10, B11, B12, B13, B14, B15, B16, B17, B18, B19, B20, B21, B22, B23, B24, B25, B26, B27, B28, B29, B30, B31, B32")
+                    break
+                else:
+                    idx.append(ohs_bands.index(b))
+            image = image[:,:,idx]
 
         mask = image_loader(self.masks[index])
         masks = [(mask == v) for v, label in enumerate(self.labels)]

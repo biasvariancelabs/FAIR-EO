@@ -30,7 +30,7 @@ class AIRPolSARSegDataset(SemanticSegmentationDataset):
         self.data_dir = self.config.data_dir
         self.selection = self.config.selection
         self.csv_file = self.config.csv_file
-        self.bands = self.config.bands
+        self.bands_gf3 = self.config.bands_gf3
 
     def __getitem__(self, index):
         mask = image_loader(self.masks[index])
@@ -66,16 +66,18 @@ class AIRPolSARSegDataset(SemanticSegmentationDataset):
         elif self.selection == "all":
             image = np.dstack((imageHH, imageHV, imageVH, imageVV))
 
-        elif self.selection == "bands": # the config must contain a self.bands field with a list of chosen bands
+        elif self.selection == "bands": 
+            if self.bands_gf3 == None:
+                print("The config must contain a bands_gf3 field with a list of chosen bands")
             idx = []
-            bands = ["HH","HV","VH","VV"]
+            gf3_bands = ["HH","HV","VH","VV"]
             image = np.dstack((imageHH, imageHV, imageVH, imageVV))
-            for b in self.bands:
-                if b not in bands:
+            for b in self.bands_gf3:
+                if b not in gf3_bands:
                     print("The bands must be valid Gaofen 3 bands, i.e. one of HH, HV, VH, VV")
                     break
                 else:
-                    idx.append(bands.index(b))
+                    idx.append(gf3_bands.index(b))
             image = image[:,:,idx]
 
         if self.transform:

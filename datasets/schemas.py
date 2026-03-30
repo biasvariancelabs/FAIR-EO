@@ -222,7 +222,7 @@ class SEN12MSSchema(BaseDatasetSchema):
         missing="rgb", description="Read RGB channels or more than 3 channels", example="all/rgb"
     )
     imagery = fields.String(
-        missing="s2", description="Consider s1, s2 or both s1 and s2 images", example="s1/s2/s1 and s2"
+        missing="s2", description="Consider s1, s2 or both s1 and s2 images", example="s1/s2/all"
     )
     bands_s2 = fields.List(
         fields.String(), missing=None, description="Select which S2 bands to use with a list of band names", example=["B02","B03","B04"]
@@ -443,9 +443,9 @@ class TallosSchema(BaseDatasetSchema):
         missing="rgb", description="Select 3 bands RGB images, specific bands or all bands", example="rgb/bands/all",
     )
     imagery = fields.String(
-        missing="sentinel2", description="Select S2 or DEM", example="dem",
+        missing="sentinel2", description="Select S2, DEM or all sources", example="dem/sentinel2/all",
     )
-    bands = fields.List(
+    bands_s2 = fields.List(
         fields.String(), missing=None, description="Select which S2 bands to use with a list of band names", example=["B01","B02","B03"]
     )
 
@@ -462,7 +462,7 @@ class Sentinel2CloudCoverSchema(BaseDatasetSchema):
     selection = fields.String(
         missing="rgb", description="Read RGB channels, specific channels or all channels", example="all/rgb/bands"
     )
-    bands = fields.List(
+    bands_s2 = fields.List(
         fields.String(), missing=None, description="Select which S2 bands to use with a list of band names", example=["B02","B03","B04"]
     )
 
@@ -479,8 +479,8 @@ class AIRPolSARSegSchema(BaseDatasetSchema):
     selection = fields.String(
         missing="rgb", description="Read RGB channels, specific channels or all channels", example="all/rgb/bands"
     )
-    bands = fields.List(
-        fields.String(), missing=None, description="Select which bands to use with a list of band names", example=["HH","HV","VV"]
+    bands_gf3 = fields.List(
+        fields.String(), missing=None, description="Select which GaoFen-3 bands to use with a list of band names", example=["HH","HV","VV"]
     )
 
 class AgriFieldNetSchema(BaseDatasetSchema):
@@ -496,7 +496,7 @@ class AgriFieldNetSchema(BaseDatasetSchema):
     selection = fields.String(
         missing="rgb", description="Read RGB channels, specific channels or all channels", example="all/rgb/bands"
     )
-    bands = fields.List(
+    bands_s2 = fields.List(
         fields.String(), missing=None, description="Select which S2 bands to use with a list of band names", example=["B02","B03","B04"]
     )
 
@@ -541,4 +541,41 @@ class RapidAI4EOSchema(BaseDatasetSchema):
     )
     task = fields.String(
         missing=None, description="Select which split to use, train, val or test", example="train"
+    )
+
+class WHUOHSSchema(BaseDatasetSchema):
+    """
+    Schema for configuring WHU-OHS dataset.
+    """
+    csv_file = fields.String(
+        missing=None, description="CSV file on disk", example="./data/train.csv"
+    )
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/CESBIO/"
+    )
+    selection = fields.String(
+        missing="rgb", description="Read RGB channels, specific channels or all channels", example="all/rgb/bands"
+    )
+    bands_ohs = fields.List(
+        fields.String(), missing=None, description="Select which OHS bands to use with a list of band names", example=["B02","B03","B04"]
+    )
+
+class ArtifivePotsdamSchema(BaseDatasetSchema):
+    """
+    Schema for configuring the Artifive-Potsdam dataset.
+    """
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/CESBIO/"
+    )
+    annotation_dir = fields.String(
+        missing='/', description="json COCO files path on disk", example="./data/annotations/"
+    )
+    csv_file = fields.String(
+        missing=None, description="CSV path on disk", example="./data/CESBIO/train.csv"
+    )
+    data_selection = fields.String(
+        missing="labeled", description="Read all images or only those which contain at least one label", example="all/labeled"
+    )
+    imagery = fields.String(
+        missing="all", description="Select which imagery to use: real, artificial or all", example="real/artificial/all"
     )

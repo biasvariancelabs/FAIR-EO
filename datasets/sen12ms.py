@@ -50,7 +50,9 @@ class SEN12MSDataset(BaseDataset):
                 s2image = s2image[:,:,1:4]
             elif self.selection == 'all': # 13 bands
                 s2image = s2image[:,:,:]
-            elif self.selection == "bands": # the config must contain a self.bands field with a list of chosen bands
+            elif self.selection == "bands": 
+                if self.bands_s2 == None:
+                    print("The config must contain a bands_s2 field with a list of chosen bands")
                 idx = []
                 s2_bands = ["B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B10","B11","B12"]
                 for b in self.bands_s2:
@@ -77,7 +79,9 @@ class SEN12MSDataset(BaseDataset):
                 s1image = np.dstack((s1image[:,:,0], s1image[:,:,1], s1image[:,:,0]/s1image[:,:,1])) 
             elif self.selection == 'all': # original 2-band (VV,VH)
                 s1image = s1image[:,:,:]
-            elif self.selection == 'bands': # the config must contain a self.bands field with a list of chosen bands
+            elif self.selection == 'bands': 
+                if self.bands_s1 == None:
+                    print("The config must contain a bands_s1 field with a list of chosen bands")
                 idx = []
                 s1_bands = ["VV","VH"]
                 for b in self.bands_s1:
@@ -97,13 +101,15 @@ class SEN12MSDataset(BaseDataset):
             image = s1image
 
         # Sentinel-1 and Sentinel-2 image
-        elif self.imagery == 's1 and s2':
+        elif self.imagery == 'all':
             s2image = image_loader(self.s2images[index])
             if self.selection == 'rgb':
                 s2image = s2image[:,:,1:4]
             elif self.selection == 'all': # 13 bands
                 s2image = s2image[:,:,:]
-            elif self.selection == "bands": # the config must contain a self.bands field with a list of chosen bands
+            elif self.selection == "bands": 
+                if self.bands_s2 == None:
+                    print("The config must contain a bands_s2 field with a list of chosen bands")
                 idx = []
                 s2_bands = ["B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B10","B11","B12"]
                 for b in self.bands_s2:
@@ -124,7 +130,9 @@ class SEN12MSDataset(BaseDataset):
                 s1image = np.dstack((s1image[:,:,0], s1image[:,:,1], s1image[:,:,0]/s1image[:,:,1])) 
             elif self.selection == 'all': # original 2-band (VV,VH)
                 s1image = s1image[:,:,:]
-            elif self.selection == 'bands': # the config must contain a self.bands field with a list of chosen bands
+            elif self.selection == 'bands': 
+                if self.bands_s1 == None:
+                    print("The config must contain a bands_s1 field with a list of chosen bands")
                 idx = []
                 s1_bands = ["VV","VH"]
                 for b in self.bands_s1:
@@ -173,7 +181,7 @@ class SEN12MSDataset(BaseDataset):
 
         # not all masks have both a corresponding s1 and s2 image
         # filter out non-existing files 
-        if self.imagery == 's1 and s2':
+        if self.imagery == 'all':
             valid_s1, valid_s2, valid_masks = [], [], []
 
             for s1, s2, m in zip(s1images, s2images, masks):
@@ -274,7 +282,7 @@ class SEN12MSDataset(BaseDataset):
             plt.imshow(img_mask)
             plt.axis("off")
 
-        elif self.imagery == 's1 and s2':
+        elif self.imagery == 'all':
             # s1 subplot
             plt.subplot(1, 3, 1)
             plt.imshow(img[:,:,:3])

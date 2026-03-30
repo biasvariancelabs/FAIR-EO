@@ -24,6 +24,7 @@ classification challenge. It is based on the global Tallo database.
 
 
 # 1364 classes. Genus column of the csv file.
+# Sentinel-1 images are not associated to any label and are therefore not considered in this dataloader
 
 
 class TalloSDataset(BaseDataset):
@@ -43,7 +44,7 @@ class TalloSDataset(BaseDataset):
         self.task = self.config.task
         self.selection = self.config.selection
         self.imagery = self.config.imagery
-        self.bands = self.config.bands
+        self.bands_s2 = self.config.bands_s2
         self.labels, self.data = self.load_dataset(self.data_dir, self.annotations, self.csv_file)
 
     def __getitem__(self, index):
@@ -56,13 +57,17 @@ class TalloSDataset(BaseDataset):
         """
         # load image
         if self.imagery == "sentinel2":
-            img = self.image_loader(os.path.join(self.data_dir, self.data[index][0]))
+            if self.selection == "all":
+                img = self.image_loader(os.path.join(self.data_dir, self.data[index][0]))
             if self.selection == "rgb":
                 img = self.image_loader(os.path.join(self.data_dir, self.data[index][0]))[:,:,1:4]
-            elif self.selection == "bands": # the config must contain a self.bands field with a list of chosen bands
+            elif self.selection == "bands":
+                if self.bands_s2 == None:
+                    print("The config must contain a bands_s2 field with a list of chosen bands")
+                img = self.image_loader(os.path.join(self.data_dir, self.data[index][0]))
                 idx = []
                 s2_bands = ["B02","B03","B04","B05","B06","B07","B08","B8A","B11","B12"] # s2 bands available for this dataset
-                for b in self.bands:
+                for b in self.bands_s2:
                     if b not in s2_bands:
                         print("The bands must be valid and available Sentinel-2 bands, i.e. one of B02, B03, B04, B05, B06, B07, B08, B8A, B11, B12")
                         break
@@ -70,10 +75,38 @@ class TalloSDataset(BaseDataset):
                         idx.append(s2_bands.index(b))
                 img = img[:,:,idx]
             # normalize image
-            img_min, img_max = img.min(), img.max()
-            img = (img - img_min) / (img_max - img_min + 1e-8)
-        else: # DEM images
+            img = (img - img.min()) / (img.max() - img.min() + 1e-8)
+
+        elif self.imagery == "dem": 
             img = self.image_loader(os.path.join(self.data_dir, self.data[index][0]))
+
+        elif self.imagery == "all":
+            # Sentinel-2
+            if self.selection == "all":
+                s2_img = self.image_loader(os.path.join(self.data_dir, self.data[index][0]))
+            if self.selection == "rgb":
+                s2_img = self.image_loader(os.path.join(self.data_dir, self.data[index][0]))[:,:,1:4]
+            elif self.selection == "bands":
+                if self.bands_s2 == None:
+                    print("The config must contain a bands_s2 field with a list of chosen bands")
+                s2_img = self.image_loader(os.path.join(self.data_dir, self.data[index][0]))
+                idx = []
+                s2_bands = ["B02","B03","B04","B05","B06","B07","B08","B8A","B11","B12"] # s2 bands available for this dataset
+                for b in self.bands_s2:
+                    if b not in s2_bands:
+                        print("The bands must be valid and available Sentinel-2 bands, i.e. one of B02, B03, B04, B05, B06, B07, B08, B8A, B11, B12")
+                        break
+                    else:
+                        idx.append(s2_bands.index(b))
+                s2_img = s2_img[:,:,idx]
+            # normalize image
+            s2_img = (s2_img - s2_img.min()) / (s2_img.max() - s2_img.min() + 1e-8)
+
+            # DEM
+            dem_id = "/".join(self.data[index][0].split('/')[:-1]) + '/DEM.tif'
+            dem_img = self.image_loader(os.path.join(self.data_dir, dem_id))
+
+            img = np.dstack((s2_img, dem_img))
 
         if self.transform:
             img = self.transform(img)
@@ -95,7 +128,7 @@ class TalloSDataset(BaseDataset):
             # get unique species
             self.labels = sorted(set(all_species))
 
-            # write the labels list in a csv file
+            # write the labels list in a csv file (optional)
             main_dir = "/".join(data_dir.split('/')[:-2])
             with open(os.path.join(main_dir,"labels_list.csv"), "w") as f:
                 for label in self.labels:
@@ -118,6 +151,8 @@ class TalloSDataset(BaseDataset):
                     path = "/".join(sample[self.imagery].split('/')[2:])
                 elif self.imagery == "sentinel2":
                     path = "/".join(sample[self.imagery].split('/')[1:])
+                elif self.imagery == "all":
+                    path = "/".join(sample["sentinel2"].split('/')[1:]) # both S2 and DEM images have the same parent path
                 
                 # multi-hot label
                 multihot_label = np.asarray(sample["label"])
@@ -149,6 +184,8 @@ class TalloSDataset(BaseDataset):
                         path = "/".join(sample[self.imagery].split('/')[2:])
                     elif self.imagery == "sentinel2":
                         path = "/".join(sample[self.imagery].split('/')[1:])
+                    elif self.imagery == "all":
+                        path = "/".join(sample["sentinel2"].split('/')[1:]) # both S2 and DEM images have the same parent path
                     
                     # multi-hot label
                     multihot_label = np.asarray(sample["label"])
@@ -167,15 +204,36 @@ class TalloSDataset(BaseDataset):
 
 
     def show_image(self, index):
+        if self.selection != "rgb":
+            print("The selection parameter must be set to rgb for visualization")
         labels_list = list(compress(self.labels, self[index][1]))
-        fig = plt.figure(figsize=(8, 6))
-        plt.title(
-            f"Image with index {index} from the dataset {self.get_name()}, with labels:\n "
-            f"{str(labels_list).strip('[]')}\n",
+
+        if self.imagery == 'all':
+            fig, axes = plt.subplots(1, 2, figsize=(16, 8))
+            fig.suptitle(
+            f"Image with index {index} from the dataset {self.get_name()}, with labels:\n"
+            f"{', '.join(labels_list)}",
             fontsize=14,
-        )
-        plt.axis("off")
-        plt.imshow(self[index][0])
+            )
+
+            axes[0].imshow(self[index][0][:,:,:3])
+            axes[0].set_title('Sentinel-2', fontsize=12)
+            axes[0].axis("off")
+
+            axes[1].imshow(self[index][0][:,:,3:])
+            axes[1].set_title('DEM', fontsize=12)
+            axes[1].axis("off")
+            
+        else: 
+            fig = plt.figure(figsize=(8, 6))
+            plt.title(
+                f"Image with index {index} from the dataset {self.get_name()}, with labels:\n "
+                f"{str(labels_list).strip('[]')}\n",
+                fontsize=14,
+            )
+            plt.axis("off")
+            plt.imshow(self[index][0])
+        
         return fig
 
     def show_batch(self, size, show_title=True):

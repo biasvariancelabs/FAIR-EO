@@ -8,7 +8,7 @@ import torch
 import csv
 
 from ..utils import image_loader
-from .schemas import FAIREOObjectDetectionCocoSchema
+from .schemas import ArtifivePotsdamSchema
 from .object_detection import BaseObjectDetectionDataset
 
 '''
@@ -18,7 +18,7 @@ data enrichment on machine learning performance.
 '''
 
 class ArtifiVePotsdamDataset(BaseObjectDetectionDataset):
-    schema = FAIREOObjectDetectionCocoSchema
+    schema = ArtifivePotsdamSchema
     name = "ArtifiVe-Potsdam"
     url = "https://rs.ipb.uni-bonn.de/data/artifive-potsdam/index.html"
 
@@ -28,26 +28,35 @@ class ArtifiVePotsdamDataset(BaseObjectDetectionDataset):
         self.data_dir = self.config.data_dir
         self.annotation_dir = self.config.annotation_dir
         self.csv_file = self.config.csv_file
-        self.selection = self.config.selection
-        self.labels, self.annot, self.data, self.original_splits = self.load_dataset(self.annotation_dir, self.csv_file, self.selection)
+        self.data_selection = self.config.data_selection
+        self.imagery = self.config.imagery
+        self.labels, self.annot, self.data, self.original_splits, self.data_types = self.load_dataset(self.annotation_dir, self.csv_file, self.data_selection)
 
     def __getitem__(self, index):
         for i in np.arange(2): # skip images where number of labels and bboxes don't match after transformations
 
             img_name = self.data[index]
+
             if self.csv_file:
                 original_split = self.original_splits[index]
-                self.annotation_dir = (os.path.join(self.data_dir, original_split, "annotations_training_patches.json") if original_split == 'training' else os.path.join(self.data_dir, original_split, "annotations_test_patches.json"))
+                data_type = self.data_types[index]
+                if data_type == 'real':
+                    annotation_dir = (os.path.join(self.data_dir, 'patched/600x600', original_split, "annotations_training_patches.json") if original_split == 'training' else os.path.join(self.data_dir, 'patched/600x600', original_split, "annotations_test_patches.json"))
+                    image = image_loader(os.path.join(self.data_dir, 'patched/600x600', original_split, f"{img_name}.jpg"))/255
+                elif data_type == 'artificial':
+                    annotation_dir = os.path.join(self.data_dir, 'artificial', "annotations.json")
+                    image = image_loader(os.path.join(self.data_dir, 'artificial', f"{img_name}.jpg"))/255
             else:
                 original_split = ''
+                annotation_dir = self.annotation_dir
+                image = image_loader(os.path.join(self.data_dir, f"{img_name}.jpg"))/255
 
-            image = image_loader(os.path.join(self.data_dir, original_split, f"{img_name}.jpg"))/255
             img_h, img_w = image.shape[:2]
 
             boxes = []
             labels = []
 
-            with open(self.annotation_dir, "r") as f:
+            with open(annotation_dir, "r") as f:
                 annot_json = json.load(f)
 
             for item in annot_json:
@@ -99,41 +108,51 @@ class ArtifiVePotsdamDataset(BaseObjectDetectionDataset):
         return image, target
 
 
-    def load_dataset(self, annotation_dir, csv_file, selection):
+    def load_dataset(self, annotation_dir, csv_file, data_selection):
 
         data = []
         annot = []
         original_splits = []
+        data_types = []
         labels = ["no-data", "car"]
 
         # BVLabs provides csv files with a 60/20/20 split
-        if csv_file: 
+        if csv_file:
             with open(csv_file, "r", encoding="utf-8-sig") as f:
                 reader = csv.reader(f)
-                next(reader, None) # skip header
+                next(reader, None)
+                csv_entries = {}  # img_name -> (original_split, data_type)
                 for row in reader:
-                    img_name, original_split = row[0], row[1]
-                    data.append(img_name)
-                    original_splits.append(original_split)
+                    img_name, original_split, data_type = row[0], row[1], row[2]
+                    if self.imagery == 'real' and data_type != 'real':
+                        continue
+                    if self.imagery == 'artificial' and data_type != 'artificial':
+                        continue
+                    csv_entries[img_name] = (original_split, data_type)
 
-            annot_paths = ["training/annotations_training_patches.json", "test/annotations_test_patches.json"]
+            if self.imagery == 'real':
+                annot_paths = ["patched/600x600/training/annotations_training_patches.json", "patched/600x600/test/annotations_test_patches.json"]
+            elif self.imagery == 'artificial':
+                annot_paths = ["artificial/annotations.json"]
+            elif self.imagery == 'all':
+                annot_paths = ["patched/600x600/training/annotations_training_patches.json", "patched/600x600/test/annotations_test_patches.json", "artificial/annotations.json"]
+
             for task in annot_paths:
                 with open(self.data_dir + task, "r") as f:
                     task_annot_json = json.load(f)
-                    for item in task_annot_json:
-                        annotations = item['annotations']['labels']
-                        img_name = item['image_filename'].split(".")[0]
-                        if img_name in data:
-                            if len(annotations) == 0 and selection != 'all': # images with no bounding boxes
-                                idx = data.index(img_name)
-                                data.pop(idx)
-                                original_splits.pop(idx)
-                                continue
-                            
-                            else: # images with one or more bounding box
-                                for vehicle in annotations:
-                                    annot.append({"label": int(1)})    
-
+                for item in task_annot_json:
+                    img_name = item['image_filename'].split(".")[0]
+                    if img_name not in csv_entries:
+                        continue
+                    annotations = item['annotations']['labels']
+                    if len(annotations) == 0 and data_selection == 'labeled':
+                        continue  # skip unannotated
+                    original_split, data_type = csv_entries[img_name]
+                    data.append(img_name)
+                    original_splits.append(original_split)
+                    data_types.append(data_type)
+                    for vehicle in annotations:
+                        annot.append({"label": int(1)})
 
         elif csv_file == None: # use the original splits
             data = []
@@ -143,16 +162,16 @@ class ArtifiVePotsdamDataset(BaseObjectDetectionDataset):
 
             for item in annot_json:
                 annotations = item['annotations']['labels']
-                if len(annotations) == 0 and self.selection == "all":
+                if len(annotations) == 0 and data_selection == "all":
                     img_name = item['image_filename'].split(".")[0]
                     data.append(img_name)     
-                else: # images which have one or more bounding box
+                else: # only keep images which have one or more bounding box
                     for vehicle in annotations:
                         annot.append({"label": int(1)})    
                     img_name = item['image_filename'].split(".")[0]
                     data.append(img_name)         
 
-        return labels, annot, data, original_splits
+        return labels, annot, data, original_splits, data_types
 
     def data_distribution_table(self):
         df = pd.DataFrame(self.annot)

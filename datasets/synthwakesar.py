@@ -1,9 +1,16 @@
-from .multiclass_classification import MultiClassClassificationDataset
+from ..base import BaseDataset
 from ..utils import image_loader
+from .schemas import FAIREOSchema
+
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 import random
+import csv
+import os
+import random
+import pandas as pd
+import seaborn as sns
 
 '''
 SynthWakeSAR is a synthetic ship classification dataset of synthetic aperture radar (SAR) images 
@@ -16,11 +23,12 @@ LABELS = ["Cargo I","Cargo II","Tanker I","Tanker II","Passenger Vessel I","Pass
           "High Speed Craft I","High Speed Craft II","Fishing Vessel I","Fishing Vessel II"]
 
 
-class SynthWakeSARDataset(MultiClassClassificationDataset):
+class SynthWakeSARDataset(BaseDataset):
 
     url = "https://data.bris.ac.uk/data/dataset/30kvuvmatwzij2mz1573zqumfx"
     labels = LABELS
     name = "SynthWakeSAR dataset"
+    schema = FAIREOSchema
 
     def __init__(self, config):
         # now call the constructor to validate the schema and load the data
@@ -28,6 +36,7 @@ class SynthWakeSARDataset(MultiClassClassificationDataset):
         # load the data
         self.data_dir = self.config.data_dir
         self.csv_file = self.config.csv_file
+        self.selection = self.config.selection
         self.data = self.load_dataset()
 
     def __getitem__(self, index):
@@ -40,7 +49,10 @@ class SynthWakeSARDataset(MultiClassClassificationDataset):
         """
         # load image
         img = image_loader(self.data[index][0])
-        img = np.asarray(Image.fromarray(img).convert('RGB'))
+        if self.selection == 'rgb': # 3 bands image
+            img = np.asarray(Image.fromarray(img).convert('RGB'))
+        elif self.selection == 'all':
+            img = img # original 1 band immage
 
         if self.transform:
             img = self.transform(img)
@@ -48,6 +60,58 @@ class SynthWakeSARDataset(MultiClassClassificationDataset):
         if self.target_transform:
             target = self.target_transform(target)
         return img, target
+    
+    def load_dataset(self):
+        data = []
+        if self.csv_file:
+            with open(self.csv_file, "r") as f:
+                csv_reader = csv.reader(f)
+                raw_data = list(csv_reader)
+
+                # If not provided initialize the labels from the csv file
+                if not self.labels:
+                    self.labels = []
+                    for index, row in enumerate(raw_data):
+                        self.labels.append(row[1])
+                    self.labels = list(sorted(set(self.labels)))
+
+                for index, row in enumerate(raw_data):
+                    file_name = row[0]
+                    item = (
+                        os.path.join(self.data_dir, file_name),
+                        self.labels.index(row[1]),
+                    )
+                    data.append(item)
+
+        if not self.labels:
+            raise ValueError("You need to provide the list of labels for the dataset")
+
+        return data
+    
+    def __len__(self):
+        return len(self.data)
+
+    def get_labels(self):
+        return self.labels
+
+    def data_distribution_table(self):
+        df = pd.read_csv(self.csv_file, sep=",", names=["File name", "Label"])
+        label_count = df.groupby("Label").count().reset_index()
+        label_count.columns = ["Label", "Count"]
+        return label_count
+
+    def data_distribution_barchart(self):
+        label_count = self.data_distribution_table()
+        fig, ax = plt.subplots(figsize=(12, 10))
+        sns.barplot(y="Label", x="Count", data=label_count, ax=ax)
+        ax.set_title(
+            "Labels distribution for {}".format(self.get_name()), pad=20, fontsize=18
+        )
+        return fig
+
+    def show_samples(self):
+        df = pd.read_csv(self.csv_file, sep=",", names=["File name", "Label"])
+        return df.head(20)
 
     def show_image(self, index):
         label = self.labels[self[index][1]]
@@ -57,7 +121,10 @@ class SynthWakeSARDataset(MultiClassClassificationDataset):
             fontsize=14,
         )
         plt.axis("off")
-        plt.imshow(self[index][0][:,:,0])
+        if self.selection == "rgb": # 3 bands image
+            plt.imshow(self[index][0][:,:,0])
+        elif self.selection == "all": # 1 band image
+            plt.imshow(self[index][0])
         return fig
 
     def show_batch(self, size, show_title=True):
