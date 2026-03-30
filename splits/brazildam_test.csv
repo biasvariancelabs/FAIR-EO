@@ -2,7 +2,6 @@ path,satellite,class,year,strata
 nao_barragem/S415_2019.tif,landsat,nao_barragem,2019,2019_nao_barragem_landsat
 nao_barragem/N003_2016.tif,landsat,nao_barragem,2016,2016_nao_barragem_landsat
 barragem/619_2016.tif,sentinel,barragem,2016,2016_barragem_sentinel
-nao_barragem/N374_2016.tif,sentinel,nao_barragem,2016,2016_nao_barragem_sentinel
 nao_barragem/N422_2016.tif,sentinel,nao_barragem,2016,2016_nao_barragem_sentinel
 barragem/553_2016.tif,landsat,barragem,2016,2016_barragem_landsat
 nao_barragem/S278_2017.tif,sentinel,nao_barragem,2017,2017_nao_barragem_sentinel
@@ -1523,7 +1522,6 @@ nao_barragem/N720_2017.tif,landsat,nao_barragem,2017,2017_nao_barragem_landsat
 nao_barragem/N047_2019.tif,sentinel,nao_barragem,2019,2019_nao_barragem_sentinel
 nao_barragem/N670_2017.tif,landsat,nao_barragem,2017,2017_nao_barragem_landsat
 nao_barragem/N489_2019.tif,sentinel,nao_barragem,2019,2019_nao_barragem_sentinel
-nao_barragem/N185_2017.tif,landsat,nao_barragem,2017,2017_nao_barragem_landsat
 nao_barragem/N524_2017.tif,landsat,nao_barragem,2017,2017_nao_barragem_landsat
 nao_barragem/S405_2017.tif,sentinel,nao_barragem,2017,2017_nao_barragem_sentinel
 nao_barragem/S546_2017.tif,sentinel,nao_barragem,2017,2017_nao_barragem_sentinel
@@ -2099,7 +2097,6 @@ barragem/277_2018.tif,sentinel,barragem,2018,2018_barragem_sentinel
 barragem/628_2019.tif,sentinel,barragem,2019,2019_barragem_sentinel
 nao_barragem/S436_2017.tif,landsat,nao_barragem,2017,2017_nao_barragem_landsat
 barragem/651_2019.tif,landsat,barragem,2019,2019_barragem_landsat
-nao_barragem/S627_2019.tif,landsat,nao_barragem,2019,2019_nao_barragem_landsat
 barragem/723_2019.tif,sentinel,barragem,2019,2019_barragem_sentinel
 barragem/026_2019.tif,sentinel,barragem,2019,2019_barragem_sentinel
 barragem/560_2017.tif,landsat,barragem,2017,2017_barragem_landsat

@@ -255,7 +255,6 @@ barragem/596_2018.tif,landsat,barragem,2018,2018_barragem_landsat
 barragem/727_2018.tif,sentinel,barragem,2018,2018_barragem_sentinel
 nao_barragem/S377_2016.tif,landsat,nao_barragem,2016,2016_nao_barragem_landsat
 nao_barragem/N677_2018.tif,sentinel,nao_barragem,2018,2018_nao_barragem_sentinel
-nao_barragem/S559_2018.tif,landsat,nao_barragem,2018,2018_nao_barragem_landsat
 nao_barragem/S552_2016.tif,sentinel,nao_barragem,2016,2016_nao_barragem_sentinel
 barragem/108_2019.tif,landsat,barragem,2019,2019_barragem_landsat
 nao_barragem/N279_2019.tif,landsat,nao_barragem,2019,2019_nao_barragem_landsat

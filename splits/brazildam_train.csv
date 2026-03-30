@@ -826,7 +826,6 @@ nao_barragem/N611_2018.tif,sentinel,nao_barragem,2018,2018_nao_barragem_sentinel
 nao_barragem/N333_2016.tif,sentinel,nao_barragem,2016,2016_nao_barragem_sentinel
 barragem/598_2016.tif,landsat,barragem,2016,2016_barragem_landsat
 barragem/212_2018.tif,sentinel,barragem,2018,2018_barragem_sentinel
-nao_barragem/N374_2016.tif,landsat,nao_barragem,2016,2016_nao_barragem_landsat
 nao_barragem/S501_2016.tif,landsat,nao_barragem,2016,2016_nao_barragem_landsat
 barragem/251_2016.tif,landsat,barragem,2016,2016_barragem_landsat
 barragem/252_2016.tif,landsat,barragem,2016,2016_barragem_landsat
@@ -2045,6 +2044,8 @@ barragem/206_2019.tif,sentinel,barragem,2019,2019_barragem_sentinel
 barragem/377_2018.tif,sentinel,barragem,2018,2018_barragem_sentinel
 nao_barragem/S612_2016.tif,sentinel,nao_barragem,2016,2016_nao_barragem_sentinel
 nao_barragem/S627_2019.tif,sentinel,nao_barragem,2019,2019_nao_barragem_sentinel
+nao_barragem/N101_2017.tif,sentinel,nao_barragem,2017,2017_nao_barragem_sentinel
+nao_barragem/N101_2017.tif,landsat,nao_barragem,2017,2017_nao_barragem_landsat
 nao_barragem/N292_2016.tif,sentinel,nao_barragem,2016,2016_nao_barragem_sentinel
 nao_barragem/N634_2016.tif,sentinel,nao_barragem,2016,2016_nao_barragem_sentinel
 nao_barragem/S005_2016.tif,sentinel,nao_barragem,2016,2016_nao_barragem_sentinel
@@ -2053,6 +2054,8 @@ barragem/074_2017.tif,sentinel,barragem,2017,2017_barragem_sentinel
 nao_barragem/S347_2018.tif,sentinel,nao_barragem,2018,2018_nao_barragem_sentinel
 nao_barragem/S023_2016.tif,landsat,nao_barragem,2016,2016_nao_barragem_landsat
 barragem/332_2016.tif,landsat,barragem,2016,2016_barragem_landsat
+nao_barragem/N374_2016.tif,landsat,nao_barragem,2016,2016_nao_barragem_landsat
+nao_barragem/N374_2016.tif,sentinel,nao_barragem,2016,2016_nao_barragem_sentinel
 nao_barragem/S059_2019.tif,landsat,nao_barragem,2019,2019_nao_barragem_landsat
 nao_barragem/N540_2017.tif,landsat,nao_barragem,2017,2017_nao_barragem_landsat
 barragem/110_2017.tif,sentinel,barragem,2017,2017_barragem_sentinel
@@ -2612,7 +2615,6 @@ nao_barragem/N266_2018.tif,sentinel,nao_barragem,2018,2018_nao_barragem_sentinel
 nao_barragem/N478_2016.tif,sentinel,nao_barragem,2016,2016_nao_barragem_sentinel
 nao_barragem/N743_2016.tif,sentinel,nao_barragem,2016,2016_nao_barragem_sentinel
 nao_barragem/N482_2016.tif,sentinel,nao_barragem,2016,2016_nao_barragem_sentinel
-nao_barragem/S420_2017.tif,landsat,nao_barragem,2017,2017_nao_barragem_landsat
 nao_barragem/N138_2018.tif,sentinel,nao_barragem,2018,2018_nao_barragem_sentinel
 nao_barragem/N474_2018.tif,landsat,nao_barragem,2018,2018_nao_barragem_landsat
 nao_barragem/N674_2017.tif,sentinel,nao_barragem,2017,2017_nao_barragem_sentinel
@@ -4930,7 +4932,6 @@ barragem/396_2017.tif,sentinel,barragem,2017,2017_barragem_sentinel
 nao_barragem/S441_2016.tif,landsat,nao_barragem,2016,2016_nao_barragem_landsat
 barragem/140_2018.tif,sentinel,barragem,2018,2018_barragem_sentinel
 barragem/483_2017.tif,sentinel,barragem,2017,2017_barragem_sentinel
-nao_barragem/N679_2017.tif,landsat,nao_barragem,2017,2017_nao_barragem_landsat
 barragem/199_2016.tif,sentinel,barragem,2016,2016_barragem_sentinel
 nao_barragem/S331_2018.tif,sentinel,nao_barragem,2018,2018_nao_barragem_sentinel
 barragem/148_2019.tif,sentinel,barragem,2019,2019_barragem_sentinel
@@ -6117,7 +6118,6 @@ nao_barragem/S534_2016.tif,sentinel,nao_barragem,2016,2016_nao_barragem_sentinel
 barragem/676_2018.tif,sentinel,barragem,2018,2018_barragem_sentinel
 nao_barragem/N637_2018.tif,landsat,nao_barragem,2018,2018_nao_barragem_landsat
 barragem/743_2017.tif,landsat,barragem,2017,2017_barragem_landsat
-nao_barragem/N101_2017.tif,landsat,nao_barragem,2017,2017_nao_barragem_landsat
 nao_barragem/S037_2017.tif,landsat,nao_barragem,2017,2017_nao_barragem_landsat
 nao_barragem/N731_2018.tif,sentinel,nao_barragem,2018,2018_nao_barragem_sentinel
 barragem/276_2018.tif,landsat,barragem,2018,2018_barragem_landsat
@@ -8388,7 +8388,6 @@ nao_barragem/N019_2019.tif,landsat,nao_barragem,2019,2019_nao_barragem_landsat
 nao_barragem/N564_2019.tif,sentinel,nao_barragem,2019,2019_nao_barragem_sentinel
 barragem/570_2017.tif,sentinel,barragem,2017,2017_barragem_sentinel
 nao_barragem/S353_2018.tif,landsat,nao_barragem,2018,2018_nao_barragem_landsat
-nao_barragem/N101_2017.tif,sentinel,nao_barragem,2017,2017_nao_barragem_sentinel
 nao_barragem/N711_2019.tif,landsat,nao_barragem,2019,2019_nao_barragem_landsat
 barragem/136_2019.tif,sentinel,barragem,2019,2019_barragem_sentinel
 barragem/013_2016.tif,sentinel,barragem,2016,2016_barragem_sentinel
@@ -8635,7 +8634,6 @@ nao_barragem/N531_2019.tif,landsat,nao_barragem,2019,2019_nao_barragem_landsat
 nao_barragem/S424_2018.tif,sentinel,nao_barragem,2018,2018_nao_barragem_sentinel
 nao_barragem/S024_2017.tif,sentinel,nao_barragem,2017,2017_nao_barragem_sentinel
 nao_barragem/N085_2016.tif,sentinel,nao_barragem,2016,2016_nao_barragem_sentinel
-nao_barragem/N256_2017.tif,landsat,nao_barragem,2017,2017_nao_barragem_landsat
 nao_barragem/N675_2018.tif,landsat,nao_barragem,2018,2018_nao_barragem_landsat
 nao_barragem/S621_2017.tif,sentinel,nao_barragem,2017,2017_nao_barragem_sentinel
 nao_barragem/S712_2019.tif,sentinel,nao_barragem,2019,2019_nao_barragem_sentinel
