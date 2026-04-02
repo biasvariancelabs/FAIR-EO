@@ -139,8 +139,7 @@ class SSL4EOS12MLDataset(BaseDataset):
                     "B01": "B1.tif",  "B02": "B2.tif",  "B03": "B3.tif",
                     "B04": "B4.tif",  "B05": "B5.tif",  "B06": "B6.tif",
                     "B07": "B7.tif",  "B08": "B8.tif",  "B8A": "B8A.tif",
-                    "B09": "B9.tif",  "B10": "B10.tif", "B11": "B11.tif",
-                    "B12": "B12.tif"
+                    "B09": "B9.tif",  "B11": "B11.tif", "B12": "B12.tif"
                 }
                 # Load a 10m band as reference shape to resize images 
                 reference = self.image_loader(os.path.join(img_path, "B2.tif"))
@@ -155,17 +154,16 @@ class SSL4EOS12MLDataset(BaseDataset):
             elif self.selection == 'bands':
                 if self.bands_s2 == None:
                     print("The config must contain a bands_s2 field with a list of chosen bands")
-                s2_bands = ["B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B10","B11","B12"] 
+                s2_bands = ["B01","B02","B03","B04","B05","B06","B07","B08","B8A","B09","B11","B12"] 
                 band_filenames = {
                     "B01": "B1.tif",  "B02": "B2.tif",  "B03": "B3.tif",
                     "B04": "B4.tif",  "B05": "B5.tif",  "B06": "B6.tif",
                     "B07": "B7.tif",  "B08": "B8.tif",  "B8A": "B8A.tif",
-                    "B09": "B9.tif",  "B10": "B10.tif", "B11": "B11.tif",
-                    "B12": "B12.tif"
+                    "B09": "B9.tif",  "B11": "B11.tif", "B12": "B12.tif"
                 }
                 for band in self.bands_s2:
                     if band not in s2_bands:
-                        print("The bands must be valid Sentinel-2 bands, i.e. one of B01, B02, B03, B04, B05, B06, B07, B08, B8A, B09, B10, B11, B12")
+                        print("The bands must be valid Sentinel-2 bands, i.e. one of B01, B02, B03, B04, B05, B06, B07, B08, B8A, B09, B11, B12")
                         break
                 # Load a 10m band as reference shape to resize images
                 reference = self.image_loader(os.path.join(img_path, "B2.tif")) 
