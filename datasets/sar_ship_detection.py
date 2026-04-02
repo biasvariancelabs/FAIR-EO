@@ -5,6 +5,8 @@ import pandas as pd
 import seaborn as sns
 import torch
 import csv
+import numpy as np
+from PIL import Image
 
 from ..utils import image_loader
 from .schemas import FAIREOObjectDetectionYoloSchema
@@ -37,7 +39,13 @@ class SARShipDetectionDataset(BaseObjectDetectionDataset):
 
     def __getitem__(self, index):
         img_name = self.data[index]
-        image = image_loader(os.path.join(self.data_dir, f"{img_name}.jpg")) / 255.0
+        image = image_loader(os.path.join(self.data_dir, f"{img_name}.jpg")) 
+
+        # images have 1 band or 3 bands
+        # unify to 3 bands images
+        if len(image.shape) == 2: # 1 band image with shape = (256, 256)
+            image = np.asarray(Image.fromarray(image).convert('RGB'))
+            
         img_h, img_w = image.shape[:2]
 
         # annotation file
