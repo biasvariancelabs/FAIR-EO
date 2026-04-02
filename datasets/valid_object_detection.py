@@ -35,42 +35,43 @@ class VALIDObjectDetectionDataset(BaseObjectDetectionDataset):
         self.annotation_dir = self.config.annotation_dir
         self.csv_file = self.config.csv_file
 
+        # Initialize an O(1) lookup dictionary for annotations
+        self.img_to_annotations = {}
+
         # load the data
         self.labels, self.data, self.annotations, self.file_names = self.load_dataset(
             self.data_dir, self.annotation_dir, self.csv_file
         )
 
     def __getitem__(self, index):
-        for j in np.arange(10): # skip cases where the amount of boxes and labels differ
+        # Safely loop to find a valid sample without causing an IndexError
+        for _ in range(10): # skip cases where the amount of boxes and labels differ
             img_data = self.file_names[index]
 
             # reading the images and converting them to correct size and color
-            image = image_loader(os.path.join(self.data_dir, img_data)) / 255.0
-            if np.shape(image)[2]==4:
-                image = image[:,:,0:3]
+            image_path = os.path.join(self.data_dir, img_data)
+            image = image_loader(image_path) / 255.0
+            if np.shape(image)[2] == 4:
+                image = image[:, :, 0:3]
 
-            # annotation file
-            name = img_data[: img_data.rfind('.png')]
-            for i in os.listdir(self.annotation_dir):
-                annotations_file_path = os.path.join(self.annotation_dir,i)
-                annotations = json.load(open(annotations_file_path, "r"))
-                name = annotations["file_name"]
-                if img_data == name:
-                    boxes = []
-                    labels = []
-                    for annotation in annotations["detection"]:
-                        labels.append(annotation["category_id"]) 
-                        bbox = annotation["hbbox"]
+            # O(1) fetch from memory
+            detections = self.img_to_annotations.get(img_data, [])
 
-                        if len(bbox) > 0:
-                            # bounding box
-                            xmin = bbox[0]
-                            xmax = bbox[0] + bbox[2]
+            boxes = []
+            labels = []
+            for annotation in detections:
+                labels.append(annotation["category_id"]) 
+                bbox = annotation["hbbox"]
 
-                            ymin = bbox[1]
-                            ymax = bbox[1] + bbox[3]
+                if len(bbox) > 0:
+                    # bounding box
+                    xmin = bbox[0]
+                    xmax = bbox[0] + bbox[2]
 
-                            boxes.append([xmin, ymin, xmax, ymax])
+                    ymin = bbox[1]
+                    ymax = bbox[1] + bbox[3]
+                    
+                    boxes.append([xmin, ymin, xmax, ymax])
 
             # convert boxes into a torch.Tensor
             boxes = torch.as_tensor(boxes, dtype=torch.float32)
@@ -80,19 +81,20 @@ class VALIDObjectDetectionDataset(BaseObjectDetectionDataset):
 
             labels = torch.as_tensor(labels, dtype=torch.int64)
 
-            target = {}
-            target["boxes"] = boxes
-            target["labels"] = labels
-            target["iscrowd"] = iscrowd
+            target = {
+                "boxes": boxes,
+                "labels": labels,
+                "iscrowd": iscrowd
+            }
 
             image, target = self.apply_transformations(image, target)
 
-            if len(target["boxes"]) == 0:
-                index = index + 1
-            elif len(target["boxes"]) != len(target["labels"]):
-                index = index + 1
-            else:
+            # Check if valid. If so, break and return. 
+            if len(target["boxes"]) > 0 and len(target["boxes"]) == len(target["labels"]):
                 break
+            
+            # Move to the next index safely, wrapping around to avoid out-of-bounds errors
+            index = (index + 1) % len(self.file_names)
 
         return image, target
         
@@ -100,56 +102,62 @@ class VALIDObjectDetectionDataset(BaseObjectDetectionDataset):
         annotations = []
         data = []
         file_names = []
-        ids = []
+        ids = set() # Use a SET for O(1) lookups instead of a List
+        
         for scene in os.listdir(os.path.join(data_dir, "images")):
             for altitude in os.listdir(os.path.join(data_dir, "images", scene)):
                 for img_name in os.listdir(os.path.join(data_dir, "images", scene, altitude)):
-                    ids.append(os.path.join(scene, altitude, img_name))
+                    ids.add(os.path.join(scene, altitude, img_name))
         
         # BVLabs provides csv files with a 60/20/20 split and a stratification based on scene type and collection altitude 
         if csv_file: 
-            ids = []
+            ids = set() # Reset as a set
             with open(csv_file, "r", encoding="utf-8-sig") as f:
                 reader = csv.reader(f)
                 next(reader, None) # skip header
                 for row in reader:
                     scene, altitude, img_name = row[0], row[1], row[2]
-                    ids.append(os.path.join(scene, altitude, img_name))
+                    ids.add(os.path.join(scene, altitude, img_name))
+
+        labels = ["no-data","tree","plant","road","pavement","land","water","pool","ice","stone","pier rubble","bridge",
+                  "sign","small vehicle","large vehicle","building","animal","person","chair","fence","garbage bin",
+                  "low obstacle","telegraph pole","traffic light","bus stop","lamp","high obstacle","tunnel","ship",
+                  "plane","harbor"]
 
         for json_file in os.listdir(annotation_dir):
-            coco = json.load(open(annotation_dir+json_file, "r"))
-            name = coco["file_name"][7 :]
+            json_path = os.path.join(annotation_dir, json_file)
+            with open(json_path, "r") as f:
+                coco = json.load(f)
+                
+            name = coco["file_name"][7:]
             
-            if name not in ids:
-                None 
-            else:
-                labels = ["no-data","tree","plant","road","pavement","land","water","pool","ice","stone","pier rubble","bridge",
-                        "sign","small vehicle","large vehicle","building","animal","person","chair","fence","garbage bin",
-                        "low obstacle","telegraph pole","traffic light","bus stop","lamp","high obstacle","tunnel","ship",
-                        "plane","harbor"]
-
+            # Instant O(1) lookup
+            if name in ids:
                 # create data
                 dataf = [
                     {
-                        **{"id": coco["id"]},
-                        **{
-                            "annotations": [],
-                            **{"file_name": coco["file_name"]},
-                        },
+                        "id": coco["id"],
+                        "annotations": [],
+                        "file_name": coco["file_name"]
                     }
                 ]
                 data_inverted = {x["id"]: i for i, x in enumerate(dataf)}
                 annotationsf = coco["detection"]
 
+                # Initialize empty list for this specific image
+                self.img_to_annotations[coco["file_name"]] = []
+
                 # create index and annotations
                 for annotation in annotationsf:
-                    bbox = []
-                    for coor in annotation["hbbox"]:
-                        bbox.append(max(coor, 0))
+                    bbox = [max(coor, 0) for coor in annotation["hbbox"]]
                     annotation["hbbox"] = bbox
+                    
                     key = data_inverted[coco["id"]]
                     dataf[key]["annotations"].append(annotation)
                     annotations.append(annotation)
+                    
+                    # Pre-cache the formatted annotation for __getitem__
+                    self.img_to_annotations[coco["file_name"]].append(annotation)
 
                 data.append(dataf)
                 file_names.append(coco["file_name"])
