@@ -579,3 +579,26 @@ class ArtifivePotsdamSchema(BaseDatasetSchema):
     imagery = fields.String(
         missing="all", description="Select which imagery to use: real, artificial or all", example="real/artificial/all"
     )
+
+class RarePlanesSchema(BaseDatasetSchema):
+    """
+    Schema for configuring the RarePlanes dataset.
+    """
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/DIOR/"
+    )
+    annotation_dir = fields.String(
+        missing='/', description="annotation files path on disk", example="./data/annotations/"
+    )
+    csv_file = fields.String(
+        missing=None, description="CSV file on disk", example="./data/train.csv"
+    )
+    task = fields.String(
+        missing=None, description="training, validation or test task", example="train"
+    )
+    imagery = fields.String(
+        missing="real", description="Select which imagery to use: real, synthetic or all", example="real/synthetic/all"
+    )
+    selection = fields.String(
+        missing="rgb", description="Read RGB channels or more than 3 channels", example="all/rgb"
+    )
