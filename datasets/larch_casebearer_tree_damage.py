@@ -9,7 +9,7 @@ import torch
 import csv
 
 from aitlas.utils import image_loader
-from aitlas.datasets.schemas import ObjectDetectionPascalDatasetSchema
+from aitlas.datasets.schemas import FAIREOObjectDetectionPascalSchema
 from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 
 '''
@@ -22,7 +22,7 @@ damage level of the Larch trees.
 
 
 class LarchCasebearerTreeDamageDataset(BaseObjectDetectionDataset):
-    schema = ObjectDetectionPascalDatasetSchema
+    schema = FAIREOObjectDetectionPascalSchema
     name = "Larch Casebearer - Tree Damage"
     url = "https://lila.science/datasets/forest-damages-larch-casebearer/"
 
