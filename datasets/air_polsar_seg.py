@@ -19,8 +19,8 @@ strip I (QPSI) mode.
 class AIRPolSARSegDataset(SemanticSegmentationDataset):
     url = "https://drive.google.com/drive/folders/1sGrmLmknhQ28nvasKbCqKvVj6rY2fCqL"
 
-    labels = ["industrial","natural","land use","water","other","housing"]
-    color_mapping = [[0,0,255],[0,255,0],[255,0,0],[0,255,255],[255,255,255],[255,255,0]] 
+    labels = ["no-data","industrial","natural","land use","water","other","housing"]
+    color_mapping = [[0,0,0],[0,0,255],[0,255,0],[255,0,0],[0,255,255],[255,255,255],[255,255,0]] 
     name = "AIR-PolSAR-Seg"
     schema = AIRPolSARSegSchema
 
@@ -38,18 +38,20 @@ class AIRPolSARSegDataset(SemanticSegmentationDataset):
         
         for i in np.arange(mask.shape[0]):
             for j in  np.arange(mask.shape[1]):
-                if mask[i,j,0] == 0 and mask[i,j,1] == 0 and mask[i,j,2] == 255:
+                if mask[i,j,0] == 0 and mask[i,j,1] == 0 and mask[i,j,2] == 0:
                     single_band_mask[i,j] = 0
-                if mask[i,j,0] == 0 and mask[i,j,1] == 255 and mask[i,j,2] == 0:
+                if mask[i,j,0] == 0 and mask[i,j,1] == 0 and mask[i,j,2] == 255:
                     single_band_mask[i,j] = 1
-                if mask[i,j,0] == 255 and mask[i,j,1] == 0 and mask[i,j,2] == 0:
+                if mask[i,j,0] == 0 and mask[i,j,1] == 255 and mask[i,j,2] == 0:
                     single_band_mask[i,j] = 2
-                if mask[i,j,0] == 0 and mask[i,j,1] == 255 and mask[i,j,2] == 255:
+                if mask[i,j,0] == 255 and mask[i,j,1] == 0 and mask[i,j,2] == 0:
                     single_band_mask[i,j] = 3
-                if mask[i,j,0] == 255 and mask[i,j,1] == 255 and mask[i,j,2] == 255:
+                if mask[i,j,0] == 0 and mask[i,j,1] == 255 and mask[i,j,2] == 255:
                     single_band_mask[i,j] = 4
-                if mask[i,j,0] == 255 and mask[i,j,1] == 255 and mask[i,j,2] == 0:
+                if mask[i,j,0] == 255 and mask[i,j,1] == 255 and mask[i,j,2] == 255:
                     single_band_mask[i,j] = 5
+                if mask[i,j,0] == 255 and mask[i,j,1] == 255 and mask[i,j,2] == 0:
+                    single_band_mask[i,j] = 6
         
         masks = [(single_band_mask == v) for v, label in enumerate(self.labels)]
         mask = np.stack(masks, axis=-1).astype("float32")
