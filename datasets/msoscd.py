@@ -65,6 +65,9 @@ class MSOSCDDataset(BaseDataset):
 
         rgb_1 = image_loader(os.path.join(self.data_dir, mode, 'rgb1', f'{img_id}.tif'))
         rgb_2 = image_loader(os.path.join(self.data_dir, mode, 'rgb2', f'{img_id}.tif'))
+        # normalize images
+        rgb_1 = (rgb_1 - rgb_1.min()) / (rgb_1.max() - rgb_1.min() + 1e-8)
+        rgb_2 = (rgb_2 - rgb_2.min()) / (rgb_2.max() - rgb_2.min() + 1e-8)
 
         if self.imagery == "s1" or self.imagery == "all":
             # SAR has 4 bands. The first 2 bands are VV, VH of time 1, and the later 2 bands are VV, VH of time 2.
@@ -155,10 +158,6 @@ class MSOSCDDataset(BaseDataset):
 
             sar_1 = resize_to_match(sar_1, opt_1)
             sar_2 = resize_to_match(sar_2, opt_2)
-
-            # normalize RGB 
-            rgb_1 = (rgb_1 - rgb_1.min()) / (rgb_1.max() - rgb_1.min() + 1e-8)
-            rgb_2 = (rgb_2 - rgb_2.min()) / (rgb_2.max() - rgb_2.min() + 1e-8)
 
             image_1, image_2 = np.dstack((sar_1, opt_1, rgb_1)), np.dstack((sar_2, opt_2, rgb_2))
           

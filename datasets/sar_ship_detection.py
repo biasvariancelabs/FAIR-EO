@@ -44,7 +44,9 @@ class SARShipDetectionDataset(BaseObjectDetectionDataset):
         # images have 1 band or 3 bands
         # unify to 3 bands images
         if len(image.shape) == 2: # 1 band image with shape = (256, 256)
-            image = np.asarray(Image.fromarray(image).convert('RGB'))
+            image = np.asarray(Image.fromarray(image).convert('RGB')) / 255
+        else:
+            image = image / 255
             
         img_h, img_w = image.shape[:2]
 

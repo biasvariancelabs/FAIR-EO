@@ -40,8 +40,11 @@ class BandonDataset(BaseDataset):
 
         pre_image = image_loader(self.data_dir + self.pre_image[index])
         post_image = image_loader(self.data_dir + self.post_image[index])
-        mask = image_loader(self.data_dir + self.change_image[index])  
+        # normalize images
+        pre_image = (pre_image - pre_image.min()) / (pre_image.max() - pre_image.min() + 1e-8)
+        post_image = (post_image - post_image.min()) / (post_image.max() - post_image.min() + 1e-8)
 
+        mask = image_loader(self.data_dir + self.change_image[index])  
         masks = [(mask == v) for v, label in enumerate(self.labels)]
         mask = np.stack(masks, axis=-1).astype("float32")
 

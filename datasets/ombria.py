@@ -88,8 +88,16 @@ class OMBRIADataset(BaseDataset):
                 s1_pre_image = np.asarray(Image.fromarray(s1_pre_image).convert('RGB'))
                 s1_post_image = np.asarray(Image.fromarray(s1_post_image).convert('RGB'))
 
+            #normalize image
+            s1_pre_image = (s1_pre_image - s1_pre_image.min()) / (s1_pre_image.max() - s1_pre_image.min() + 1e-8)
+            s1_post_image = (s1_post_image - s1_post_image.min()) / (s1_post_image.max() - s1_post_image.min() + 1e-8)
+
             s2_pre_image = image_loader(os.path.join(self.data_dir, f'OmbriaS2', split, 'BEFORE', f'S2_before_{img_id}.png'))
             s2_post_image = image_loader(os.path.join(self.data_dir, f'OmbriaS2', split, 'AFTER', f'S2_after_{img_id}.png'))
+
+            #normalize image
+            s2_pre_image = (s2_pre_image - s2_pre_image.min()) / (s2_pre_image.max() - s2_pre_image.min() + 1e-8)
+            s2_post_image = (s2_post_image - s2_post_image.min()) / (s2_post_image.max() - s2_post_image.min() + 1e-8)
 
             pre_image = np.dstack((s1_pre_image, s2_pre_image))
             post_image = np.dstack((s1_post_image, s2_post_image))
