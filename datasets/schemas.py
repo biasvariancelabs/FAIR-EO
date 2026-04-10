@@ -602,3 +602,20 @@ class RarePlanesSchema(BaseDatasetSchema):
     selection = fields.String(
         missing="rgb", description="Read RGB channels or more than 3 channels", example="all/rgb"
     )
+
+class GeoNRWSchema(BaseDatasetSchema):
+    """
+    Schema for configuring GeoNRW dataset.
+    """
+    csv_file = fields.String(
+        missing=None, description="CSV file on disk", example="./data/train.csv"
+    )
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/CESBIO/"
+    )
+    selection = fields.String(
+        missing="rgb", description="Read RGB channels or more than 3 channels", example="all/rgb"
+    )
+    imagery = fields.String(
+        missing="aerial", description="Select aerial, DEM or all sources", example="dem/aerial/all",
+    )

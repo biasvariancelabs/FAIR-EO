@@ -2,14 +2,14 @@ import numpy as np
 import os
 import pandas as pd
 import glob
-import math
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 import imageio
+import seaborn as sns
 
-from .semantic_segmentation import SemanticSegmentationDataset
+from ..base import BaseDataset
 from ..utils import image_loader
-from .schemas import FAIREOSchema
+from .schemas import GeoNRWSchema
 
 
 """
@@ -18,7 +18,7 @@ with 10 classes and TerraSARX spotlight acquisitions over the German state North
 """
 
 
-class GeoNRWDataset(SemanticSegmentationDataset):
+class GeoNRWDataset(BaseDataset):
     url = "https://ieee-dataport.org/open-access/geonrw"
 
     labels = ["no data", "forest", "water", "agricultural", "urban", "grassland",
@@ -38,7 +38,7 @@ class GeoNRWDataset(SemanticSegmentationDataset):
     ]
 
     name = "GeoNRW"
-    schema = FAIREOSchema
+    schema = GeoNRWSchema
 
     def __init__(self, config):
         # now call the constructor to validate the schema and split the data
@@ -47,32 +47,46 @@ class GeoNRWDataset(SemanticSegmentationDataset):
         self.data_dir = self.config.data_dir
         self.selection = self.config.selection
         self.csv_file = self.config.csv_file
+        self.imagery = self.config.imagery
+        self.rgb_images, self.dem_images, self.masks = self.load_dataset(self.data_dir, self.csv_file)
 
 
     def __getitem__(self, index):
-        rgb = imageio.imread(self.rgb_images[index])
+        if self.imagery == 'aerial':
+            image = imageio.imread(self.rgb_images[index]) # 3 or 4 bands image
+            if self.selection == 'rgb':
+                image = image[:, :, :3]
 
-        if rgb.shape[-1] == 4:
-            rgb = rgb[:, :, :3]
-        
-        mask = image_loader(self.masks[index]).astype(np.uint8)
+        elif self.imagery == 'dem':
+            image = image_loader(self.dem_images[index])
+
+        elif self.imagery == 'all':
+            rgb_image = imageio.imread(self.rgb_images[index]) # 3 or 4 bands image
+            if self.selection == 'rgb':
+                rgb_image = rgb_image[:, :, :3]
+
+            dem_image = image_loader(self.dem_images[index])
+
+            image = np.dstack((rgb_image, dem_image))
+
+        mask = image_loader(self.masks[index])
         masks = [(mask == v) for v in range(len(self.labels))]
         mask = np.stack(masks, axis=-1).astype("float32")
 
-        return self.apply_transformations(rgb, mask)
+        return self.apply_transformations(image, mask)
 
 
     def load_dataset(self, data_dir, csv_file):
         if not self.labels:
             raise ValueError("You need to provide the list of labels for the dataset")
 
-        self.rgb_images = []
-        self.dem_images = []
-        self.masks = []
+        rgb_images = []
+        dem_images = []
+        masks = []
 
         city_dirs = [os.path.join(data_dir, d) for d in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir, d))]
 
-        if csv_file is not None:
+        if csv_file is not None: # 60/20/20 splits
             df = pd.read_csv(csv_file)
             
             required_columns = {'rgb_path', 'dem_path', 'mask_path'}
@@ -80,14 +94,20 @@ class GeoNRWDataset(SemanticSegmentationDataset):
                 raise ValueError(f"CSV file must contain columns: {required_columns}")
             
             for rgb in df['rgb_path']:
-                if os.path.exists(os.path.join(data_dir, rgb)):
-                    self.rgb_images.append(os.path.join(data_dir, rgb))
-
-            self.dem_images = [os.path.join(data_dir, dem) for dem in df['dem_path']]
-            for mask in df['mask_path']:
-                if os.path.exists(os.path.join(data_dir, mask)):
-                    self.masks.append(os.path.join(data_dir, mask))
-            
+                img_id = rgb[:-8]
+                if self.imagery == 'all':
+                    if os.path.exists(os.path.join(data_dir, rgb)) and os.path.exists(os.path.join(data_dir, f'{img_id}_seg.tif')) and os.path.exists(os.path.join(data_dir, f'{img_id}_dem.tif')):
+                        rgb_images.append(os.path.join(data_dir, rgb))
+                        dem_images.append(os.path.join(data_dir, f'{img_id}_dem.tif'))
+                        masks.append(os.path.join(data_dir, f'{img_id}_seg.tif'))
+                elif self.imagery == 'aerial':
+                    if os.path.exists(os.path.join(data_dir, rgb)) and os.path.exists(os.path.join(data_dir, f'{img_id}_seg.tif')):
+                        rgb_images.append(os.path.join(data_dir, rgb))
+                        masks.append(os.path.join(data_dir, f'{img_id}_seg.tif'))
+                elif self.imagery == 'dem':
+                    if os.path.exists(os.path.join(data_dir, f'{img_id}_dem.tif')) and os.path.exists(os.path.join(data_dir, f'{img_id}_seg.tif')):
+                        dem_images.append(os.path.join(data_dir, f'{img_id}_dem.tif'))
+                        masks.append(os.path.join(data_dir, f'{img_id}_seg.tif'))
         else:
             for city in city_dirs:
                 rgb_files = glob.glob(os.path.join(city, "*_rgb.jp2"))
@@ -97,16 +117,29 @@ class GeoNRWDataset(SemanticSegmentationDataset):
                     seg_path = os.path.join(city, f"{base_id}_seg.tif")
 
                     if not (os.path.exists(dem_path) and os.path.exists(seg_path)):
-                        #print(f"Warning: Missing DEM or SEG for {base_id} in {city}")
                         continue
 
-                    self.rgb_images.append(rgb_path)
-                    self.dem_images.append(dem_path)
-                    self.masks.append(seg_path)
+                    rgb_images.append(rgb_path)
+                    dem_images.append(dem_path)
+                    masks.append(seg_path)
+
+        return rgb_images, dem_images, masks
 
               
     def __len__(self):
-        return len(self.rgb_images)
+        return len(self.masks)
+
+    def get_labels(self):
+        return self.labels
+    
+    def apply_transformations(self, image, mask):
+        if self.joint_transform:
+            image, mask = self.joint_transform((image, mask))
+        if self.transform:
+            image = self.transform(image)
+        if self.target_transform:
+            mask = self.target_transform(mask)
+        return image, mask
 
     def data_distribution_table(self):
         label_dist = {key: 0 for key in self.labels}
@@ -120,21 +153,19 @@ class GeoNRWDataset(SemanticSegmentationDataset):
         label_count = label_count.astype(float)
         return label_count
     
+    def data_distribution_barchart(self, show_title=True):
+        label_count = self.data_distribution_table()
+        fig, ax = plt.subplots(figsize=(12, 10))
+        sns.barplot(data=label_count, x=label_count.index, y='Number of pixels', ax=ax)
+        if show_title:
+            ax.set_title(
+                "Labels distribution for {}".format(self.get_name()), pad=20, fontsize=18
+            )
+        return fig
+    
 
     def show_image(self, index, show_title=False):
-        rgb, mask = self[index]
-        dem = image_loader(self.dem_images[index])
-
-        if hasattr(rgb, 'cpu'):
-            rgb = rgb.cpu().numpy().transpose(1, 2, 0)
-        if hasattr(mask, 'cpu'):
-            mask = mask.cpu().numpy()
-        if hasattr(dem, 'cpu'):
-            dem = dem.cpu().numpy()
-
-        if dem.ndim == 3:
-            dem = dem.squeeze()
-
+        image, mask = self[index]
         img_mask = np.zeros([mask.shape[0], mask.shape[1], 3], np.uint8)
         legend_elements = []
         for i, label in enumerate(self.labels):
@@ -148,29 +179,40 @@ class GeoNRWDataset(SemanticSegmentationDataset):
 
         fig = plt.figure(figsize=(16, 6))
 
-        height_factor = math.ceil(len(self.labels) / 3)
-        height_factor = 0.73 if height_factor == 4 else 0.80 if height_factor == 2 else 0.81
-
-        fig.legend(handles=legend_elements, bbox_to_anchor=(0.2, height_factor, 0.6, 0.2),
+        fig.legend(handles=legend_elements, bbox_to_anchor=(0.2, 1.0, 0.6, 0.2),
                 ncol=3, mode='expand', loc='lower left', prop={'size': 12})
 
-        # RGB Image
-        plt.subplot(1, 3, 1)
-        plt.imshow(rgb.astype(np.uint8))
-        plt.title("RGB Image")
-        plt.axis("off")
+        if self.imagery == 'aerial' or self.imagery == 'dem':
+            # Image
+            plt.subplot(1, 3, 1)
+            plt.imshow(image) 
+            plt.title("Image")
+            plt.axis("off")
 
-        # DEM Image
-        plt.subplot(1, 3, 2)
-        plt.imshow(dem, cmap="terrain")
-        plt.title("DEM - Digital Elevation Model")
-        plt.axis("off")
+            # Segmentation Mask
+            plt.subplot(1, 3, 3)
+            plt.imshow(img_mask)
+            plt.title("Mask")
+            plt.axis("off")
 
-        # Segmentation Mask
-        plt.subplot(1, 3, 3)
-        plt.imshow(img_mask)
-        plt.title("Segmentation Mask")
-        plt.axis("off")
+        elif self.imagery == 'all':
+            # RGB Image
+            plt.subplot(1, 3, 1)
+            plt.imshow(image[:,:,:-1])
+            plt.title("RGB Image")
+            plt.axis("off")
+
+            # DEM Image
+            plt.subplot(1, 3, 2)
+            plt.imshow(image[:,:,-1]) 
+            plt.title("DEM")
+            plt.axis("off")
+
+            # Segmentation Mask
+            plt.subplot(1, 3, 3)
+            plt.imshow(img_mask)
+            plt.title("Mask")
+            plt.axis("off")
 
         fig.tight_layout()
         plt.show()
