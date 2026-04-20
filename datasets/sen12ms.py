@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 import csv
 import math
+import torch
 
 from ..utils import image_loader
 from .schemas import SEN12MSSchema
@@ -148,7 +149,7 @@ class SEN12MSDataset(BaseDataset):
             if self.transform:
                 s1image = self.transform(s1image)
 
-            image = np.dstack((s1image, s2image))
+            image = torch.cat((s1image, s2image), dim=0)
 
         # the mask contains 4 possible classification schemas
         # this selects the first schema (IGBP)
