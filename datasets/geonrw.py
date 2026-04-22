@@ -22,7 +22,7 @@ class GeoNRWDataset(BaseDataset):
     url = "https://ieee-dataport.org/open-access/geonrw"
 
     labels = ["no data", "forest", "water", "agricultural", "urban", "grassland",
-            "railway", "highway", "airport, shipyard", "roads", "buildings"]
+            "railway", "highway", "airport and shipyard", "roads", "buildings"]
     color_mapping = [
         [0, 0, 0],    
         [0, 100, 0],   
