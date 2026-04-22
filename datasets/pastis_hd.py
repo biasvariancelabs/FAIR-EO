@@ -168,15 +168,16 @@ class PASTISHDDataset(SemanticSegmentationDataset):
             spot_image = (spot_image - spot_image.min()) / (spot_image.max() - spot_image.min() + 1e-8)
 
             image = np.dstack((s1a, s2, spot_image))
-            
+
+        # for simplicity we keep only the firt time stamp
         elif self.imagery == 'S2':
-            image = s2
+            image = s2[0,:,:,:] # can be changed to image = s2 to consider the whole S2 time series
         elif self.imagery == 'S1A':
-            image = s1a
+            image = s1a[0,:,:,:] # can be changed to image = s1a to consider the whole S1A time series
         elif self.imagery == 'S1D':
-            image = s1d
+            image = s1d[0,:,:,:] # can be changed to image = s1d to consider the whole S1D time series
         elif self.imagery == 'SPOT':
-            image = spot_image
+            image = spot_image[0,:,:,:]
             
         if self.transform:
             image = self.transform(image)
