@@ -9,12 +9,17 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 import geopandas as gpd
-import rasterio
+import tifffile
 from shapely.geometry import box
 from skimage.draw import polygon
 from matplotlib.patches import Patch
 import math
-from rasterio.transform import rowcol
+import warnings
+import logging
+
+# Suppress noisy tifffile warnings about GDAL_NODATA casting
+warnings.filterwarnings("ignore", message=".*GDAL_NODATA.*")
+logging.getLogger('tifffile').setLevel(logging.ERROR)
 
 '''
 The CropHarvest dataset is a crop dataset of geo-referenced labels with satellite data inputs, 
@@ -24,6 +29,44 @@ time series.
 
 LABELS = ["no-data","cereals","vegetables_melons","fruits_nuts","oilseeds","root_tuber","beverage_spice","leguminous","sugar","other","non_crop"]
 
+def get_transform_info(tif_path):
+    """Extracts transform and CRS info using tifffile."""
+    with tifffile.TiffFile(tif_path) as tif:
+        page = tif.pages[0]
+        # Extract Transform
+        try:
+            scale = page.tags['ModelPixelScaleTag'].value
+            tiepoint = page.tags['ModelTiepointTag'].value
+            x_min = tiepoint[3]
+            y_max = tiepoint[4]
+            dx = scale[0]
+            dy = -scale[1] 
+        except KeyError:
+            x_min, y_max, dx, dy = 0, 0, 1, -1
+            
+        # Extract CRS (EPSG)
+        epsg = None
+        try:
+            # GeoKeyDirectoryTag (34735)
+            geokeys = page.tags[34735].value
+            num_keys = geokeys[3]
+            for i in range(num_keys):
+                key_id = geokeys[4 + i*4]
+                key_val = geokeys[4 + i*4 + 3]
+                # 3072: ProjectedCSTypeGeoKey, 2048: GeographicTypeGeoKey
+                if key_id in [3072, 2048] and key_val > 0:
+                    epsg = f"EPSG:{key_val}"
+                    break
+        except:
+            pass
+
+        return x_min, y_max, dx, dy, epsg
+
+def world_to_pixel(x, y, x_min, y_max, dx, dy):
+    """Converts world coordinates to pixel coordinates."""
+    col = (x - x_min) / dx
+    row = (y - y_max) / dy
+    return col, row
 
 class CropHarvestDataset(BaseDataset):
 
@@ -49,7 +92,8 @@ class CropHarvestDataset(BaseDataset):
             # These bands encompass 12 time steps. 
             # The first 2 bands are VV and VH, followed by the 13 S2 bands, a temperature band and a total precipitation band. 
             # This structure is repeated 12 times for the 12 time steps. The last 2 bands are the elevation and the slope.
-            image = image_loader(os.path.join(self.data_dir, "eo_data", self.images[index])) # 206 bands
+            tif_path = os.path.join(self.data_dir, "eo_data", self.images[index])
+            image = image_loader(tif_path) # 206 bands
             img_w, img_h = image.shape[:2]
             red = image[:,:,5]
             green = image[:,:,4]
@@ -94,16 +138,21 @@ class CropHarvestDataset(BaseDataset):
             # Find the polygons which intersect the image
             # Load the GeoJSON with standard geometry
             mask = np.zeros((img_w,img_h),dtype=np.int64)
-            gdf = gpd.read_file(os.path.join(self.data_dir, "labels_cleaned.geojson"))
+            cleaned_labels_path = os.path.join(self.data_dir, "labels_cleaned.geojson")
+            if not os.path.exists(cleaned_labels_path):
+                 # Just in case load_dataset hasn't run or file is missing
+                 gdf = gpd.read_file(os.path.join(self.data_dir, "labels.geojson"))
+            else:
+                 gdf = gpd.read_file(cleaned_labels_path)
             
-            with rasterio.open(os.path.join(self.data_dir, "eo_data", self.images[index])) as src:
-                bounds = src.bounds
-                image_crs = src.crs
-                transform = src.transform 
+            x_min, y_max, dx, dy, epsg = get_transform_info(tif_path)
+            x_max = x_min + img_w * dx
+            y_min = y_max + img_h * dy
+            
+            if epsg:
+                gdf = gdf.to_crs(epsg)
 
-            gdf = gdf.to_crs(image_crs)
-
-            image_bbox = box(*bounds)
+            image_bbox = box(x_min, y_min, x_max, y_max)
             intersecting_polygons = gdf[gdf.intersects(image_bbox)]
             if not intersecting_polygons.empty:
             
@@ -116,8 +165,7 @@ class CropHarvestDataset(BaseDataset):
                     if geometry.geom_type == "Polygon":
                         coords = list(geometry.exterior.coords)
 
-                        pixel_coords = [rowcol(transform, x, y) for x, y in coords]
-                        pixel_coords = [(col, row) for row, col in pixel_coords]  # rasterio returns (row, col)
+                        pixel_coords = [world_to_pixel(x, y, x_min, y_max, dx, dy) for x, y in coords]
                         label = geom["classification_label"]
                         mask = self.add_polygon(mask, pixel_coords, label)
                 

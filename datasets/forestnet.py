@@ -3,7 +3,7 @@ import os
 import pandas as pd
 import pickle
 from collections import defaultdict
-import rasterio.features
+import cv2
 import csv
 
 from .semantic_segmentation import SemanticSegmentationDataset
@@ -48,13 +48,16 @@ class ForestNetDataset(SemanticSegmentationDataset):
         with open(mask_path, 'rb') as f:
             poly = pickle.load(f)
 
-        binary_mask = rasterio.features.rasterize(
-            [poly],
-            out_shape=(h, w),
-            fill=0,
-            default_value=1,
-            dtype=np.uint8
-        )
+        # rasterize using OpenCV
+        binary_mask = np.zeros((h, w), dtype=np.uint8)
+        if poly.geom_type == 'Polygon':
+            # Extract exterior coordinates and round to nearest integer
+            coords = np.array(poly.exterior.coords).astype(np.int32)
+            cv2.fillPoly(binary_mask, [coords], 1)
+        elif poly.geom_type == 'MultiPolygon':
+            for p in poly.geoms:
+                coords = np.array(p.exterior.coords).astype(np.int32)
+                cv2.fillPoly(binary_mask, [coords], 1)
 
         single_band_mask = np.zeros((h, w), dtype=np.uint8)
         single_band_mask[binary_mask == 1] = label_index

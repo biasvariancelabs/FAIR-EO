@@ -5,11 +5,16 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 import geopandas as gpd
-import rasterio
+import tifffile
 from skimage.draw import polygon
 from matplotlib.patches import Patch
 import math
-from rasterio.transform import rowcol
+import warnings
+import logging
+
+# Suppress noisy tifffile warnings about GDAL_NODATA casting
+warnings.filterwarnings("ignore", message=".*GDAL_NODATA.*")
+logging.getLogger('tifffile').setLevel(logging.ERROR)
 
 from ..base import BaseDataset
 from ..utils import image_loader
@@ -23,6 +28,44 @@ for Well-managed plantation, Poorly-managed plantation, No plantation and other 
 
 LABELS = ["Well-managed plantation","Poorly-managed plantation","Non-plantation","Residential","Background","Uncertain"]
 
+def get_transform_info(tif_path):
+    """Extracts transform and CRS info using tifffile."""
+    with tifffile.TiffFile(tif_path) as tif:
+        page = tif.pages[0]
+        # Extract Transform
+        try:
+            scale = page.tags['ModelPixelScaleTag'].value
+            tiepoint = page.tags['ModelTiepointTag'].value
+            x_min = tiepoint[3]
+            y_max = tiepoint[4]
+            dx = scale[0]
+            dy = -scale[1] 
+        except KeyError:
+            x_min, y_max, dx, dy = 0, 0, 1, -1
+            
+        # Extract CRS (EPSG)
+        epsg = None
+        try:
+            # GeoKeyDirectoryTag (34735)
+            geokeys = page.tags[34735].value
+            num_keys = geokeys[3]
+            for i in range(num_keys):
+                key_id = geokeys[4 + i*4]
+                key_val = geokeys[4 + i*4 + 3]
+                # 3072: ProjectedCSTypeGeoKey, 2048: GeographicTypeGeoKey
+                if key_id in [3072, 2048] and key_val > 0:
+                    epsg = f"EPSG:{key_val}"
+                    break
+        except:
+            pass
+
+        return x_min, y_max, dx, dy, epsg
+
+def world_to_pixel(x, y, x_min, y_max, dx, dy):
+    """Converts world coordinates to pixel coordinates."""
+    col = (x - x_min) / dx
+    row = (y - y_max) / dy
+    return col, row
 
 class CashewPlantationDataset(BaseDataset):
 
@@ -65,12 +108,12 @@ class CashewPlantationDataset(BaseDataset):
         gdf = gpd.read_file(os.path.join(self.data_dir, "labels","00.geojson"))
         
         # the first band is used to transform the labels from real-world coordinates to pixel coordinates
-        image_B01 = os.path.join(self.data_dir, "imagery", "00", self.dates[0], f"{self.dates[0]}_B01_10m.tif")
-        with rasterio.open(os.path.join(self.data_dir, "imagery/00", date, image_B01)) as src:
-            image_crs = src.crs
-            transform = src.transform 
+        image_B01_path = os.path.join(self.data_dir, "imagery", "00", self.dates[0], f"{self.dates[0]}_B01_10m.tif")
+        
+        x_min, y_max, dx, dy, epsg = get_transform_info(image_B01_path)
 
-        gdf = gdf.to_crs(image_crs)
+        if epsg:
+            gdf = gdf.to_crs(epsg)
         
         for idx, geom in gdf.iterrows():
             label = geom["class_name"]
@@ -78,8 +121,7 @@ class CashewPlantationDataset(BaseDataset):
             geometry = geom["geometry"]
             if geometry.geom_type == "Polygon":
                 coords = list(geometry.exterior.coords)
-                pixel_coords = [rowcol(transform, x, y) for x, y in coords]
-                pixel_coords = [(col, row) for row, col in pixel_coords]  
+                pixel_coords = [world_to_pixel(x, y, x_min, y_max, dx, dy) for x, y in coords]
                 label = geom["class_name"]
                 mask = self.add_polygon(mask, pixel_coords, label)
             

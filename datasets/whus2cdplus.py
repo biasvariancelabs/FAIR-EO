@@ -3,10 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import torch
-import rasterio
+import tifffile
 from matplotlib.patches import Patch
 import math
-import pandas as pd
 
 from ..utils import image_loader
 from .semantic_segmentation import SemanticSegmentationDataset
@@ -45,12 +44,9 @@ class WHUS2CDplusDataset(SemanticSegmentationDataset):
         if self.selection == "rgb":
             b02_path, b03_path, b04_path = self.images[index]
 
-            with rasterio.open(b02_path) as src:
-                b02 = src.read(1)
-            with rasterio.open(b03_path) as src:
-                b03 = src.read(1)
-            with rasterio.open(b04_path) as src:
-                b04 = src.read(1)
+            b02 = image_loader(b02_path)
+            b03 = image_loader(b03_path)
+            b04 = image_loader(b04_path)
 
             # Stack as RGB
             image = np.dstack((b02, b03, b04)).astype(np.float32)
@@ -70,8 +66,7 @@ class WHUS2CDplusDataset(SemanticSegmentationDataset):
             ]
             band_arrays = []
             for band_list in bands:
-                with rasterio.open(band_list[index]) as src:
-                    band = src.read(1)
+                band = image_loader(band_list[index])
                 band_arrays.append(band)
 
             image = np.dstack(band_arrays).astype(np.float32)

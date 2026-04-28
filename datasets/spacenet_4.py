@@ -7,8 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 from skimage.draw import polygon
 import geopandas as gpd
-import rasterio
-from rasterio.transform import rowcol
+import tifffile
 from shapely.geometry import Polygon, MultiPolygon
 
 from .semantic_segmentation import SemanticSegmentationDataset
@@ -21,6 +20,50 @@ capabilities to process high off-nadir imagery. The dataset includes 27 WorldVie
 from 7 degrees to 54 degrees off-nadir all captured within 5 minutes of each other.
 """
 
+import warnings
+import logging
+# Suppress noisy tifffile warnings about GDAL_NODATA casting
+warnings.filterwarnings("ignore", message=".*GDAL_NODATA.*")
+logging.getLogger('tifffile').setLevel(logging.ERROR)
+
+def get_transform_info(tif_path):
+    """Extracts transform and CRS info using tifffile."""
+    with tifffile.TiffFile(tif_path) as tif:
+        page = tif.pages[0]
+        # Extract Transform
+        try:
+            scale = page.tags['ModelPixelScaleTag'].value
+            tiepoint = page.tags['ModelTiepointTag'].value
+            x_min = tiepoint[3]
+            y_max = tiepoint[4]
+            dx = scale[0]
+            dy = -scale[1] 
+        except KeyError:
+            x_min, y_max, dx, dy = 0, 0, 1, -1
+            
+        # Extract CRS (EPSG)
+        epsg = None
+        try:
+            # GeoKeyDirectoryTag (34735)
+            geokeys = page.tags[34735].value
+            num_keys = geokeys[3]
+            for i in range(num_keys):
+                key_id = geokeys[4 + i*4]
+                key_val = geokeys[4 + i*4 + 3]
+                # 3072: ProjectedCSTypeGeoKey, 2048: GeographicTypeGeoKey
+                if key_id in [3072, 2048] and key_val > 0:
+                    epsg = f"EPSG:{key_val}"
+                    break
+        except:
+            pass
+
+        return x_min, y_max, dx, dy, epsg
+
+def world_to_pixel(x, y, x_min, y_max, dx, dy):
+    """Converts world coordinates to pixel coordinates."""
+    col = (x - x_min) / dx
+    row = (y - y_max) / dy
+    return col, row
 
 class SpaceNet4Dataset(SemanticSegmentationDataset):
 
@@ -40,7 +83,8 @@ class SpaceNet4Dataset(SemanticSegmentationDataset):
         for i in np.arange(len(self.data)): # some geojsons are empty
             img_id = self.data[index]
             id = img_id[-18: -4]
-            image = image_loader(os.path.join(self.data_dir,img_id))
+            tif_path = os.path.join(self.data_dir,img_id)
+            image = image_loader(tif_path)
             if image.shape[0] == 4:
                 image = image.transpose(1,2,0)[:,:,:3]
             else:
@@ -54,8 +98,11 @@ class SpaceNet4Dataset(SemanticSegmentationDataset):
             annotation = os.path.join(self.data_dir,'geojson_buildings',f'SN4_buildings_train_AOI_6_Atlanta_geojson_buildings_{id}.geojson')
             if os.path.getsize(annotation) > 0:
                 gdf = gpd.read_file(annotation)
-                with rasterio.open(os.path.join(self.data_dir,img_id)) as src:
-                    transform = src.transform # used to tranfsorm the labels from real-world coordinates to pixel coordinates
+                
+                x_min, y_max, dx, dy, epsg = get_transform_info(tif_path)
+
+                if epsg:
+                    gdf = gdf.to_crs(epsg)
 
                 for index, row in gdf.iterrows():
                     geometry = row['geometry']
@@ -66,9 +113,13 @@ class SpaceNet4Dataset(SemanticSegmentationDataset):
 
                     for poly in polygons:
                         coords = list(poly.exterior.coords)
-                        # transform to pixel coordinates
-                        pixel_coords = [rowcol(transform, x, y) for x, y in coords]
-                        pixel_coords = [(col, row) for row, col in pixel_coords]  # rasterio returns (row, col)
+                        # transform to pixel coordinates using manual helper
+                        pixel_coords = [world_to_pixel(x, y, x_min, y_max, dx, dy) for x, y, *_ in coords]
+                        # In the original, it was [(col, row) for row, col in rowcol]
+                        # Our world_to_pixel returns (col, row) directly.
+                        # Original: pixel_coords = [rowcol(transform, x, y) for x, y in coords] -> returns (row, col)
+                        # Then: pixel_coords = [(col, row) for row, col in pixel_coords] -> returns (col, row)
+                        # So we keep (col, row) from world_to_pixel.
                         mask_2d = self.add_building(mask_2d, pixel_coords)
 
                 num_classes = len(self.labels)
@@ -90,7 +141,7 @@ class SpaceNet4Dataset(SemanticSegmentationDataset):
 
     def add_building(self, mask:np.ndarray, coords:list)->np.ndarray:
         # Handle 3D coordinates (x, y, z) by ignoring z
-        pixel_coords = [(int(round(x)), int(round(y))) for x, y, *_ in coords]
+        pixel_coords = [(int(round(x)), int(round(y))) for x, y in coords]
 
         if len(pixel_coords) < 4:
             return mask

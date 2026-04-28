@@ -7,7 +7,7 @@ import seaborn as sns
 import torch
 import geopandas as gpd
 import glob
-import rasterio
+import tifffile
 from shapely.geometry import box
 
 from ..utils import image_loader
@@ -19,6 +19,51 @@ The IDTReeS (Integrating Data science with Trees and Remote Sensing) dataset was
 The aim was to delineate and classify individual tree crowns in NEON data. The data contains individual tree crown (ITC) 
 spatial extent to be used for trainning. The classes are taxonomic species.
 '''
+
+import warnings
+import logging
+# Suppress noisy tifffile warnings about GDAL_NODATA casting
+warnings.filterwarnings("ignore", message=".*GDAL_NODATA.*")
+logging.getLogger('tifffile').setLevel(logging.ERROR)
+
+def get_transform_info(tif_path):
+    """Extracts transform and CRS info using tifffile."""
+    with tifffile.TiffFile(tif_path) as tif:
+        page = tif.pages[0]
+        # Extract Transform
+        try:
+            scale = page.tags['ModelPixelScaleTag'].value
+            tiepoint = page.tags['ModelTiepointTag'].value
+            x_min = tiepoint[3]
+            y_max = tiepoint[4]
+            dx = scale[0]
+            dy = -scale[1] 
+        except KeyError:
+            x_min, y_max, dx, dy = 0, 0, 1, -1
+            
+        # Extract CRS (EPSG)
+        epsg = None
+        try:
+            # GeoKeyDirectoryTag (34735)
+            geokeys = page.tags[34735].value
+            num_keys = geokeys[3]
+            for i in range(num_keys):
+                key_id = geokeys[4 + i*4]
+                key_val = geokeys[4 + i*4 + 3]
+                # 3072: ProjectedCSTypeGeoKey, 2048: GeographicTypeGeoKey
+                if key_id in [3072, 2048] and key_val > 0:
+                    epsg = f"EPSG:{key_val}"
+                    break
+        except:
+            pass
+
+        return x_min, y_max, dx, dy, epsg
+
+def world_to_pixel(x, y, x_min, y_max, dx, dy):
+    """Converts world coordinates to pixel coordinates."""
+    col = (x - x_min) / dx
+    row = (y - y_max) / dy
+    return col, row
 
 class IDTReeSDataset(BaseObjectDetectionDataset):
     schema = FAIREOObjectDetectionYoloSchema
@@ -42,17 +87,23 @@ class IDTReeSDataset(BaseObjectDetectionDataset):
     def __getitem__(self, index):
         for i in np.arange(10): # skip images without labels
             img_name = self.data[index]
-            image = image_loader(os.path.join(self.data_dir, f"{img_name}.tif")) / 255.0
+            tif_path = os.path.join(self.data_dir, f"{img_name}.tif")
+            image = image_loader(tif_path) / 255.0
             img_h, img_w = image.shape[:2]
 
             annot = self.annotations
 
             # all the labels are in the same file, one needs to clip it to the corresponding image
-            with rasterio.open(os.path.join(self.data_dir, f"{img_name}.tif")) as src:
-                bounds = src.bounds  
-                tiff_crs = src.crs   
-                transform = src.transform  # affine transform: real-world coordinates to pixel coordinates
-            tiff_bounds_geom = box(*bounds)
+            x_min, y_max, dx, dy, epsg = get_transform_info(tif_path)
+            
+            if epsg:
+                annot = annot.to_crs(epsg)
+            
+            # bounds calculation
+            x_max = x_min + img_w * dx
+            y_min = y_max + img_h * dy
+            
+            tiff_bounds_geom = box(x_min, y_min, x_max, y_max)
 
             # select polygons that intersect the image (TIFF) bounds
             gdf_within_tiff = annot[annot.intersects(tiff_bounds_geom)]
@@ -66,11 +117,11 @@ class IDTReeSDataset(BaseObjectDetectionDataset):
             labels = []
             for _, row in gdf_within_tiff.iterrows():
                 # transform real-world coordinates to pixel coordinates
-                x1, y1 = ~transform * (row["minx"], row["miny"]) 
-                x2, y2 = ~transform * (row["maxx"], row["maxy"])
+                c1, r1 = world_to_pixel(row["minx"], row["miny"], x_min, y_max, dx, dy)
+                c2, r2 = world_to_pixel(row["maxx"], row["maxy"], x_min, y_max, dx, dy)
 
-                xmin, xmax = sorted([x1, x2])
-                ymin, ymax = sorted([y1, y2])
+                xmin, xmax = sorted([c1, c2])
+                ymin, ymax = sorted([r1, r2])
 
                 # clip to image size
                 xmin = int(np.clip(xmin, 0, img_w))
@@ -130,8 +181,9 @@ class IDTReeSDataset(BaseObjectDetectionDataset):
 
         ids = os.listdir(data_dir)
         for img in ids:
-            name = img[: img.rfind('.tif')]
-            data.append(name)
+            if img.endswith('.tif'):
+                name = img[: img.rfind('.tif')]
+                data.append(name)
 
         labels = ["ACPE","ACRU","ACSA3","AMLA","BETUL","CAGL8","CATO6","FAGR","GOLA","LITU","LYLU3","MAGNO","NYBI","NYSY","OXYDE",
                 "PEPA37","PIEL","PIPA2","PINUS","PITA","PRSE2","QUAL","QUCO2","QUGE2","QUHE2","QULA2","QULA3","QUMO4","QUNI","QURU",
