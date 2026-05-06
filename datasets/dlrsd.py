@@ -34,12 +34,7 @@ class DLRSDDataset(SemanticSegmentationDataset):
     def __getitem__(self, index):
         image = image_loader(self.images[index])
         mask = image_loader(self.masks[index])
-        h, w, _ = mask.shape
-        mask_indices = np.zeros((h, w), dtype=np.int64)
-        for i, color in enumerate(self.color_mapping):
-            match = np.all(mask == color, axis=-1)
-            mask_indices[match] = i
-        masks = [(mask_indices == v) for v in range(len(self.labels))]
+        masks = [(mask == v) for v, label in enumerate(self.labels)]
         mask = np.stack(masks, axis=-1).astype("float32")
 
         return self.apply_transformations(image, mask)
