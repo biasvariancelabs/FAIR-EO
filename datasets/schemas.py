@@ -619,3 +619,92 @@ class GeoNRWSchema(BaseDatasetSchema):
     imagery = fields.String(
         missing="aerial", description="Select aerial, DEM or all sources", example="dem/aerial/all",
     )
+
+class xView2Schema(BaseDatasetSchema):
+    """
+    Schema for configuring xView2 dataset.
+    """
+    csv_file = fields.String(
+        missing=None, description="CSV file on disk", example="./data/train.csv"
+    )
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/CESBIO/"
+    )
+    selection = fields.String(
+        missing="rgb", description="Read RGB channels or more than 3 channels", example="all/rgb"
+    )
+    classification = fields.String(
+        missing="binary", description="Classification schema", example="multilabel/binary"
+    )
+
+class Sen1Floods11Schema(BaseDatasetSchema):
+    """
+    Schema for configuring Sen1Floods11 dataset.
+    """
+    csv_file = fields.String(
+        missing=None, description="CSV file on disk", example="./data/train.csv"
+    )
+    source_dir = fields.String(
+        missing="/", description="Source images path on disk", example="./data/CESBIO/"
+    )
+    annot_dir = fields.String(
+        missing="/", description="Annotations path on disk", example="./data/CESBIO/"
+    )
+    imagery = fields.String(
+        missing=None, description="Imagery source", example="S1/S2"
+    )
+    annotations = fields.String(
+        missing=None, description="Annotations type", example="weakly labeled/hand labeled"
+    )
+    selection = fields.String(
+        missing="rgb", description="Read RGB channels or more than 3 channels", example="all/rgb"
+    )
+
+class DynamicEarthNetSchema(BaseDatasetSchema):
+    """
+    Schema for configuring DynamicEarthNet dataset.
+    """
+    csv_file = fields.String(
+        missing=None, description="CSV file on disk", example="./data/train.csv"
+    )
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/CESBIO/"
+    )
+    selection = fields.String(
+        missing="rgb", description="Read RGB channels or more than 3 channels", example="all/rgb"
+    )
+    mode = fields.String(
+        missing=None, description="train/val or test task", example="train"
+    )
+    imagery = fields.String(
+        missing="s2", description="S1, S2, PlanetScope imagery or all sources", example="s1/s2/planet/all"
+    )
+    timeseries= fields.Boolean(
+        missing=False, description="Consider the timeseries or a single timestamp", example="True/False"
+    )
+
+class BioMasstersSchema(BaseDatasetSchema):
+    """
+    Schema for configuring BioMassters dataset.
+    """
+    csv_file = fields.String(
+        missing=None, description="CSV file on disk", example="./data/train.csv"
+    )
+    data_dir = fields.String(
+        missing="/", description="Dataset path on disk", example="./data/CESBIO/"
+    )
+    annotation_dir = fields.String(
+        missing="/", description="Annotations path on disk", example="./data/CESBIO/"
+    )
+    selection = fields.String(
+        missing="rgb", description="Read RGB channels or more than 3 channels", example="all/rgb"
+    )
+    mode = fields.String(
+        missing=None, description="train/val or test task", example="train"
+    )
+    timeseries = fields.Boolean(
+        missing=False, description="Consider the time series or a single time stamp", example="True/False"
+    )
+    imagery = fields.String(
+        missing="S2", description="Consider S1, S2 or both sources", example="S1/S2/all"
+    )
