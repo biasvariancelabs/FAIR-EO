@@ -9,9 +9,9 @@ import csv
 from matplotlib.patches import Patch
 from skimage.draw import polygon
 
-from .semantic_segmentation import SemanticSegmentationDataset
-from .schemas import SegmentationDatasetSchema
-from ..utils import image_loader
+from aitlas.datasets.semantic_segmentation import SemanticSegmentationDataset
+from aitlas.datasets.schemas import SegmentationDatasetSchema
+from aitlas.utils import image_loader
 
 """
 TTPLA is an aerial-image dataset for detection and segmentation of transmission towers (TTs) 

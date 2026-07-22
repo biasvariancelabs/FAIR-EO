@@ -1,5 +1,5 @@
 from marshmallow import fields, validate
-from ..base.schemas import BaseDatasetSchema
+from aitlas.base.schemas import BaseDatasetSchema
 
 class FAIREOSchema(BaseDatasetSchema):
     """

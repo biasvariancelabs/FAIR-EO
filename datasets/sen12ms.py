@@ -8,9 +8,9 @@ import csv
 import math
 from concurrent.futures import ThreadPoolExecutor
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import SEN12MSSchema
-from ..base import BaseDataset
+from aitlas.base import BaseDataset
 
 """
 The SEN12MS dataset contains 180662 patch triplets of corresponding Sentinel-1 dual-pol SAR data, 

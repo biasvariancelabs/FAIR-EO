@@ -7,8 +7,8 @@ import tifffile
 from matplotlib.patches import Patch
 import math
 
-from ..utils import image_loader
-from .semantic_segmentation import SemanticSegmentationDataset
+from aitlas.utils import image_loader
+from aitlas.datasets.semantic_segmentation import SemanticSegmentationDataset
 from .schemas import FAIREOSchema
 
 

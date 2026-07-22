@@ -1,4 +1,4 @@
-from .multiclass_classification import MultiClassClassificationDataset
+from aitlas.datasets.multiclass_classification import MultiClassClassificationDataset
 
 '''
 The dataset was created for scene classification with images collected from Google Earth. 

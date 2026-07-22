@@ -1,4 +1,4 @@
-from .multiclass_classification import MultiClassClassificationDataset
+from aitlas.datasets.multiclass_classification import MultiClassClassificationDataset
 from PIL import Image
 import pandas as pd
 import numpy as np

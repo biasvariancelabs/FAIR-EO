@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 from shapely import wkt
 from skimage.draw import polygon
 
-from .semantic_segmentation import SemanticSegmentationDataset
-from .schemas import SegmentationDatasetSchema
-from ..utils import image_loader
+from aitlas.datasets.semantic_segmentation import SemanticSegmentationDataset
+from aitlas.datasets.schemas import SegmentationDatasetSchema
+from aitlas.utils import image_loader
 
 """
 SpaceNet 1 is the first dataset released in the SpaceNet challenge series (2016). It contains

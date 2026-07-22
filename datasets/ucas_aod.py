@@ -8,9 +8,9 @@ import torch
 import csv
 import fnmatch
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import FAIREOObjectDetectionYoloSchema
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 
 '''
 The dataset is a remote sensing image dataset that contains two types of targets: cars and airplanes, 

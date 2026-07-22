@@ -6,9 +6,9 @@ import seaborn as sns
 import h5py
 from matplotlib.patches import Patch
 
-from ..base import BaseDataset
+from aitlas.base import BaseDataset
 from .schemas import MSBCSchema
-from ..utils import image_loader
+from aitlas.utils import image_loader
 
 
 """

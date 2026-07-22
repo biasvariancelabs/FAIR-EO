@@ -8,9 +8,9 @@ import torch
 import matplotlib.patches as patches
 from collections import defaultdict
 
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 from .schemas import FAIREOObjectDetectionCocoSchema
-from ..utils import image_loader
+from aitlas.utils import image_loader
 
 
 """

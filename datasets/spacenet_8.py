@@ -7,9 +7,9 @@ from matplotlib.patches import Patch
 from shapely import wkt
 from skimage.draw import line, polygon
 
-from .semantic_segmentation import BaseDataset
+from aitlas.base import BaseDataset
 from .schemas import SpaceNet8DatasetSchema
-from ..utils import image_loader
+from aitlas.utils import image_loader
 
 
 """

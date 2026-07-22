@@ -9,9 +9,9 @@ import torch
 import csv 
 from PIL import Image
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import FAIREOObjectDetectionPascalSchema
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 
 '''
 The MASATI (MAritime SATellite Imagery) dataset provides maritime scenes of optical aerial images. 

@@ -6,9 +6,9 @@ import seaborn as sns
 import json
 import torch
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import FAIREOObjectDetectionCocoSchema
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 
 '''
 User-generated aerial video frames from natural disasters annotated with instance-level building damage

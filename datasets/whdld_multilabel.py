@@ -1,5 +1,5 @@
-from .multilabel_classification import MultiLabelClassificationDataset
-from ..utils import image_loader
+from aitlas.datasets.multilabel_classification import MultiLabelClassificationDataset
+from aitlas.utils import image_loader
 
 import pandas as pd
 import numpy as np

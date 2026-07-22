@@ -1,5 +1,5 @@
-from .multiclass_classification import MultiClassClassificationDataset
-from ..utils import image_loader
+from aitlas.datasets.multiclass_classification import MultiClassClassificationDataset
+from aitlas.utils import image_loader
 
 '''
 CV-BrCT stands for Cross-View Brazilian Construction Type. The dataset is composed of 24000 pairs of images, 

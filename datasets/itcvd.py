@@ -8,9 +8,9 @@ import torch
 import csv
 import scipy.io
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import FAIREOObjectDetectionYoloSchema
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 
 '''
 ITCVD dataset is a large-scale, well annotated (all vehicles in a scene are annotated) and challenging 

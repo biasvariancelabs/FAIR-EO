@@ -2,9 +2,9 @@ import os
 import numpy as np
 import pandas as pd
 
-from ..utils import image_loader
-from .schemas import SegmentationDatasetSchema
-from .semantic_segmentation import SemanticSegmentationDataset
+from aitlas.utils import image_loader
+from aitlas.datasets.schemas import SegmentationDatasetSchema
+from aitlas.datasets.semantic_segmentation import SemanticSegmentationDataset
 
 """
 The Airbus Ship Detection Challenge dataset consists of high-resolution satellite imagery with 

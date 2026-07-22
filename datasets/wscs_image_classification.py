@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import csv 
 import random
 
-from ..base import BaseDataset
+from aitlas.base import BaseDataset
 from .schemas import FAIREOSchema
 
 """

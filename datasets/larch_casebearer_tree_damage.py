@@ -9,7 +9,7 @@ import torch
 import csv
 
 from aitlas.utils import image_loader
-from aitlas.datasets.schemas import FAIREOObjectDetectionPascalSchema
+from .schemas import FAIREOObjectDetectionPascalSchema
 from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 
 '''

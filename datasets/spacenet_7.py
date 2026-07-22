@@ -8,9 +8,9 @@ from skimage.draw import polygon
 import geopandas as gpd
 from shapely.geometry import Polygon, MultiPolygon
 
-from .semantic_segmentation import SemanticSegmentationDataset
+from aitlas.datasets.semantic_segmentation import SemanticSegmentationDataset
 from .schemas import FAIREOSchema
-from ..utils import image_loader
+from aitlas.utils import image_loader
 
 
 """

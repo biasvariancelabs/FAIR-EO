@@ -5,9 +5,9 @@ import seaborn as sns
 import json
 import torch
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import FAIREOObjectDetectionCocoSchema
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 
 '''
 SeaDronesSee is a large-scale data set aimed at helping develop systems for Search

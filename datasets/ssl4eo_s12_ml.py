@@ -1,6 +1,6 @@
-from ..base import BaseDataset
+from aitlas.base import BaseDataset
 from .schemas import SSL4EOS12MLSchema
-from ..utils import image_loader
+from aitlas.utils import image_loader
 
 import random
 from itertools import compress

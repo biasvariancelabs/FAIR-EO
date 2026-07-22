@@ -7,8 +7,8 @@ from matplotlib.patches import Patch
 import imageio
 import seaborn as sns
 
-from ..base import BaseDataset
-from ..utils import image_loader
+from aitlas.base import BaseDataset
+from aitlas.utils import image_loader
 from .schemas import GeoNRWSchema
 
 

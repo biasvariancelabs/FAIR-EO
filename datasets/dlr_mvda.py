@@ -8,9 +8,9 @@ import numpy as np
 import matplotlib.patches as patches
 from PIL import Image
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import FAIREOObjectDetectionYoloSchema
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 
 '''
 DLR-MVDA is an open aerial image dataset with annotated vehicles captured from an airplane over the city of Munich, Germany.

@@ -5,9 +5,9 @@ import seaborn as sns
 import json
 import torch
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import FAIREOObjectDetectionCocoSchema
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 
 '''
 This is a single class dataset consisting of tiles of satellite imagery labeled 

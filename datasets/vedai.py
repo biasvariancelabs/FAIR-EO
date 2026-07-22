@@ -7,9 +7,9 @@ import torch
 import numpy as np
 import csv
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import FAIREOObjectDetectionYoloSchema
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 
 '''
 VEDAI is a dataset for Vehicle Detection in Aerial Imagery, provided as a tool to benchmark automatic target

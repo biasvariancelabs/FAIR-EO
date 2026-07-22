@@ -7,9 +7,9 @@ import seaborn as sns
 import csv
 from skimage.transform import resize
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import PASTISHDSchema
-from .semantic_segmentation import SemanticSegmentationDataset
+from aitlas.datasets.semantic_segmentation import SemanticSegmentationDataset
 
 
 '''

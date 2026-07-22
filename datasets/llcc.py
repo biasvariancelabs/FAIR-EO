@@ -6,7 +6,7 @@ import seaborn as sns
 import numpy as np
 from collections import Counter
 
-from ..base import BaseDataset
+from aitlas.base import BaseDataset
 from .schemas import LLCCDatasetSchema
 
 '''

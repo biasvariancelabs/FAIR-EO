@@ -1,4 +1,4 @@
-from .multiclass_classification import MultiClassClassificationDataset
+from aitlas.datasets.multiclass_classification import MultiClassClassificationDataset
 
 '''
 The Moving and Stationary Target Acquisition and Recognition (MSTAR) was a joint Defense Advanced Research 

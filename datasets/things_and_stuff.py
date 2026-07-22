@@ -5,9 +5,9 @@ import pandas as pd
 import seaborn as sns
 import torch
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import FAIREOObjectDetectionYoloSchema
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 
 '''
 This dataset was used to develop the things and stuff (TAS) context model.

@@ -2,8 +2,8 @@ import numpy as np
 import os
 import pandas as pd
 
-from .semantic_segmentation import SemanticSegmentationDataset
-from ..utils import image_loader
+from aitlas.datasets.semantic_segmentation import SemanticSegmentationDataset
+from aitlas.utils import image_loader
 from .schemas import FAIREOSchema
 
 """

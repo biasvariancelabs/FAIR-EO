@@ -8,9 +8,9 @@ from skimage.draw import line
 import math
 from shapely import wkt
 
-from .semantic_segmentation import SemanticSegmentationDataset
-from .schemas import SegmentationDatasetSchema
-from ..utils import image_loader
+from aitlas.datasets.semantic_segmentation import SemanticSegmentationDataset
+from aitlas.datasets.schemas import SegmentationDatasetSchema
+from aitlas.utils import image_loader
 
 """
 SpaceNet 3 is the third dataset released as part of the SpaceNet Challenge series. It focuses on road 

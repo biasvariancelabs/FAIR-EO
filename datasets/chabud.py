@@ -8,9 +8,9 @@ import fnmatch
 from PIL import Image
 import io
 
-from .semantic_segmentation import BaseDataset
+from aitlas.base import BaseDataset
 from .schemas import FAIREOSchema
-from ..utils import image_loader
+from aitlas.utils import image_loader
 
 
 """

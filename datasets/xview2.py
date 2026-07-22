@@ -10,9 +10,9 @@ from matplotlib.patches import Patch
 from shapely import wkt
 from skimage.draw import polygon
 
-from .semantic_segmentation import BaseDataset
+from aitlas.base import BaseDataset
 from .schemas import xView2Schema
-from ..utils import image_loader
+from aitlas.utils import image_loader
 
 
 """

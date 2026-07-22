@@ -2,8 +2,8 @@ import pandas as pd
 import numpy as np
 import os
 
-from ..utils import image_loader
-from .multilabel_classification import MultiLabelClassificationDataset
+from aitlas.utils import image_loader
+from aitlas.datasets.multilabel_classification import MultiLabelClassificationDataset
 
 '''
 MultiScene is a large-scale dataset for multi-scene recognition in single aerial images. It contains 

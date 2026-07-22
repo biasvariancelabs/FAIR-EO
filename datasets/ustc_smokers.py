@@ -1,4 +1,4 @@
-from .multiclass_classification import MultiClassClassificationDataset
+from aitlas.datasets.multiclass_classification import MultiClassClassificationDataset
 
 '''
 The dataset was created to detect the fire smoke in satellite imagery. Smoke detection 

@@ -10,8 +10,8 @@ from shapely.affinity import affine_transform
 from skimage.draw import polygon as sk_polygon
 import json
 
-from ..base import BaseDataset
-from ..utils import image_loader
+from aitlas.base import BaseDataset
+from aitlas.utils import image_loader
 from .schemas import FAIREOSchema
 
 """

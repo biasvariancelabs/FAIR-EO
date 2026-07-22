@@ -1,5 +1,5 @@
-from .multiclass_classification import MultiClassClassificationDataset
-from ..utils import image_loader
+from aitlas.datasets.multiclass_classification import MultiClassClassificationDataset
+from aitlas.utils import image_loader
 
 '''
 AiRound is composed of 11753 images distributed among 11 classes. Each sample is composed by a triplet, 

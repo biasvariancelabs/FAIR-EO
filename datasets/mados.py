@@ -6,8 +6,8 @@ from matplotlib.patches import Patch
 import fnmatch
 import seaborn as sns
 
-from .semantic_segmentation import SemanticSegmentationDataset
-from ..utils import image_loader
+from aitlas.datasets.semantic_segmentation import SemanticSegmentationDataset
+from aitlas.utils import image_loader
 from .schemas import FAIREOSchema
 
 """

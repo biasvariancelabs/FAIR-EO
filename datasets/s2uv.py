@@ -7,7 +7,7 @@ import pandas as pd
 import seaborn as sns
 import torch
 
-from .multiclass_classification import MultiClassClassificationDataset
+from aitlas.datasets.multiclass_classification import MultiClassClassificationDataset
 from .schemas import FAIREOSchema
 
 '''

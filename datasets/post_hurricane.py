@@ -1,7 +1,6 @@
-from .multiclass_classification import MultiClassClassificationDataset
-from .schemas import ClassificationDatasetSchema
-from ..base import BaseDataset
-from ..utils import image_loader
+from aitlas.datasets.schemas import ClassificationDatasetSchema
+from aitlas.base import BaseDataset
+from aitlas.utils import image_loader
 
 import csv
 import os

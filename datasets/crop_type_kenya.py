@@ -5,7 +5,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import csv 
 
-from ..base import BaseDataset
+from aitlas.base import BaseDataset
 from .schemas import FAIREOSchema
 
 """

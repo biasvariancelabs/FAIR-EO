@@ -8,8 +8,8 @@ import fnmatch
 from PIL import Image
 Image.MAX_IMAGE_PIXELS = None
 
-from ..utils import image_loader
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.utils import image_loader
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 from .schemas import FAIREOObjectDetectionYoloSchema
 
 '''

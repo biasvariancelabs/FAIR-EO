@@ -4,8 +4,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 
-from ..utils import image_loader
-from .multiclass_classification import MultiClassClassificationDataset
+from aitlas.utils import image_loader
+from aitlas.datasets.multiclass_classification import MultiClassClassificationDataset
 
 '''
 The Cars Overhead With Context (COWC) data set is a large set of annotated cars from overhead. The COWC-M 

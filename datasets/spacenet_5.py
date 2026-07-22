@@ -9,9 +9,9 @@ from shapely import wkt
 from skimage.draw import line
 from matplotlib.patches import Patch
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import FAIREOSchema
-from .semantic_segmentation import SemanticSegmentationDataset
+from aitlas.datasets.semantic_segmentation import SemanticSegmentationDataset
 
 
 """

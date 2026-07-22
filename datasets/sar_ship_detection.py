@@ -8,9 +8,9 @@ import csv
 import numpy as np
 from PIL import Image
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import FAIREOObjectDetectionYoloSchema
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 
 '''
 The dataset contains 102 images from the Gaofen-3 satellite and 108 images from Sentinel-1. The 

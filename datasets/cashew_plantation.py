@@ -16,8 +16,8 @@ import logging
 warnings.filterwarnings("ignore", message=".*GDAL_NODATA.*")
 logging.getLogger('tifffile').setLevel(logging.ERROR)
 
-from ..base import BaseDataset
-from ..utils import image_loader
+from aitlas.base import BaseDataset
+from aitlas.utils import image_loader
 from .schemas import FAIREOSchema
 
 

@@ -8,9 +8,9 @@ import seaborn as sns
 import torch
 import csv 
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import FAIREOObjectDetectionPascalSchema
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 
 '''
 This dataset contains 794 Google Earth images annotated with bounding boxes around ships.

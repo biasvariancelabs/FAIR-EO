@@ -7,8 +7,8 @@ import numpy as np
 import fnmatch
 from PIL import Image
 
-from ..utils import image_loader
-from .multiclass_classification import MultiClassClassificationDataset
+from aitlas.utils import image_loader
+from aitlas.datasets.multiclass_classification import MultiClassClassificationDataset
 
 
 '''

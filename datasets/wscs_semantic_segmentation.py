@@ -7,7 +7,7 @@ import csv
 from matplotlib.patches import Patch
 import math
 
-from ..base import BaseDataset
+from aitlas.base import BaseDataset
 from .schemas import FAIREOSchema
 
 

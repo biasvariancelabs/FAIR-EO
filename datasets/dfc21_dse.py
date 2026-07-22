@@ -7,9 +7,9 @@ import os
 from matplotlib.patches import Patch
 import fnmatch
 
-from ..base import BaseDataset
+from aitlas.base import BaseDataset
 from .schemas import DFC21DSESchema
-from ..utils import image_loader
+from aitlas.utils import image_loader
 
 
 """

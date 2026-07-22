@@ -1,4 +1,4 @@
-from .multiclass_classification import MultiClassClassificationDataset
+from aitlas.datasets.multiclass_classification import MultiClassClassificationDataset
 
 '''
 AIDER stands for Aerial Image Database for Emergency Response applications. The dataset construction 

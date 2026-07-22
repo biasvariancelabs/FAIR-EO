@@ -6,9 +6,9 @@ import seaborn as sns
 import torch
 import csv 
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import FAIREOObjectDetectionYoloSchema
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 
 '''
 The dataset was created to use deep learning to detect automatically the number, size and 

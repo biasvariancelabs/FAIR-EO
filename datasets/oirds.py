@@ -6,9 +6,9 @@ import torch
 import numpy as np
 import csv
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import FAIREOObjectDetectionYoloSchema
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 
 '''
 The OIRDS project has produced a dataset with almost 1,000 labeled images suitable for developing 

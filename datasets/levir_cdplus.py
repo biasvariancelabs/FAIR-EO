@@ -6,9 +6,9 @@ import seaborn as sns
 from matplotlib.patches import Patch
 import csv
 
-from .change_detection import ChangeDetectionDataset
+from aitlas.datasets.change_detection import ChangeDetectionDataset
 from .schemas import FAIREOSchema
-from ..utils import image_loader
+from aitlas.utils import image_loader
 
 
 """

@@ -6,8 +6,8 @@ import pandas as pd
 import seaborn as sns
 import torch
 
-from ..utils import image_loader
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.utils import image_loader
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 from .schemas import FAIREOObjectDetectionCocoSchema
 
 

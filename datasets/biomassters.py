@@ -6,9 +6,9 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import BioMasstersSchema
-from ..base import BaseDataset
+from aitlas.base import BaseDataset
 
 """
 BioMassters is a deep learning ready dataset to predict yearly Above Ground Biomass (AGB) for Finnish forests 

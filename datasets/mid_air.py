@@ -7,9 +7,9 @@ import seaborn as sns
 from matplotlib.patches import Patch
 import math
 
-from .semantic_segmentation import SemanticSegmentationDataset
+from aitlas.datasets.semantic_segmentation import SemanticSegmentationDataset
 from .schemas import FAIREOSchema
-from ..utils import pil_loader, tiff_loader
+from aitlas.utils import pil_loader, tiff_loader
 
 """
 Mid-Air (Montefiore Institute Dataset of Aerial Images and Records) is a multi-purpose synthetic dataset 

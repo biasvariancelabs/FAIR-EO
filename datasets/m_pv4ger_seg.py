@@ -8,7 +8,7 @@ import seaborn as sns
 import math
 from matplotlib.patches import Patch
 
-from ..base import BaseDataset
+from aitlas.base import BaseDataset
 from .schemas import FAIREOSchema
 
 """

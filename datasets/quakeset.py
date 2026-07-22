@@ -4,9 +4,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import h5py
 
-from .semantic_segmentation import BaseDataset
+from aitlas.base import BaseDataset
 from .schemas import FAIREOSchema
-from ..utils import image_loader
+from aitlas.utils import image_loader
 
 
 """

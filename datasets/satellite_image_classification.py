@@ -1,5 +1,5 @@
-from .multiclass_classification import MultiClassClassificationDataset
-from ..utils import image_loader
+from aitlas.datasets.multiclass_classification import MultiClassClassificationDataset
+from aitlas.utils import image_loader
 
 '''
 The dataset is created for remote sensing image interpretation. It consists of 5631 images in four classes.

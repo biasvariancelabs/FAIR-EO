@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import h5py
 
-from .semantic_segmentation import SemanticSegmentationDataset
+from aitlas.datasets.semantic_segmentation import SemanticSegmentationDataset
 from .schemas import FAIREOSchema
 
 """

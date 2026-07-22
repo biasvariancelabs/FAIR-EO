@@ -8,9 +8,9 @@ import seaborn as sns
 import torch
 import csv
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import FAIREOObjectDetectionPascalSchema
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 
 '''
 The UAVOD-10 consists of 844 images and 18,234 instances. These instances are labeled 

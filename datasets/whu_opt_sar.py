@@ -7,8 +7,8 @@ import csv
 from matplotlib.patches import Patch
 
 from .schemas import WHUOPTSARSchema
-from ..utils import image_loader
-from ..base import BaseDataset
+from aitlas.utils import image_loader
+from aitlas.base import BaseDataset
 
 """
 WHU-OPT-SAR is the first and largest land use classification dataset that has fused high resolution optical and SAR 

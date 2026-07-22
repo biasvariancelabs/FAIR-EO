@@ -6,8 +6,8 @@ import math
 import os
 from matplotlib.patches import Patch
 
-from ..utils import image_loader
-from ..base import BaseDataset
+from aitlas.utils import image_loader
+from aitlas.base import BaseDataset
 from .schemas import FAIREOSchema
 
 

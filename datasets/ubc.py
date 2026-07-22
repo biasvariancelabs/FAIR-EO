@@ -8,9 +8,9 @@ from skimage.draw import polygon
 from matplotlib.patches import Patch
 import math
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import FAIREOObjectDetectionYoloSchema
-from ..base import BaseDataset
+from aitlas.base import BaseDataset
 
 '''
 The Urban Building Classification (UBC) dataset was created for building detection and classification from very 

@@ -5,11 +5,9 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import csv
 
-from .semantic_segmentation import SemanticSegmentationDataset
-from ..utils import image_loader
-from ..models import DeepLabV3
+from aitlas.datasets.semantic_segmentation import SemanticSegmentationDataset
+from aitlas.utils import image_loader
 from .schemas import FAIREOSchema
-from ..transforms import MinMaxNormTranspose, ResizeToTensor
 
 """
 This dataset contains high-resolution aerial imagery from the USDA NAIP program, high-resolution 

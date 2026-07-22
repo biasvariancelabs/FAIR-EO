@@ -8,9 +8,9 @@ import matplotlib.pyplot as plt
 from skimage.draw import polygon
 from matplotlib.patches import Patch
 
-from ..utils import image_loader
-from .schemas import SegmentationDatasetSchema
-from .semantic_segmentation import SemanticSegmentationDataset
+from aitlas.utils import image_loader
+from aitlas.datasets.schemas import SegmentationDatasetSchema
+from aitlas.datasets.semantic_segmentation import SemanticSegmentationDataset
 
 """
 The Dstl Satellite Imagery Feature Detection dataset was released as part of a Kaggle competition 

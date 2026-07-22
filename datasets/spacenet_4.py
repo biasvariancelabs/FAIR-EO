@@ -10,9 +10,9 @@ import geopandas as gpd
 import tifffile
 from shapely.geometry import Polygon, MultiPolygon
 
-from .semantic_segmentation import SemanticSegmentationDataset
-from .schemas import SegmentationDatasetSchema
-from ..utils import image_loader
+from aitlas.datasets.semantic_segmentation import SemanticSegmentationDataset
+from aitlas.datasets.schemas import SegmentationDatasetSchema
+from aitlas.utils import image_loader
 
 """
 SpaceNet4: Off-Nadir Building Detection dataset was specifically built to explore advanced algorithms 

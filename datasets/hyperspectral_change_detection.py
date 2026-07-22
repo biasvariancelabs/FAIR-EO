@@ -6,9 +6,9 @@ import seaborn as sns
 from matplotlib.patches import Patch
 import scipy.io
 
-from .semantic_segmentation import BaseDataset
+from aitlas.base import BaseDataset
 from .schemas import MultilabelChangeDetectionSchema
-from ..utils import image_loader
+from aitlas.utils import image_loader
 
 
 """

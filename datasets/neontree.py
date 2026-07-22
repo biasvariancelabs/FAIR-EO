@@ -8,9 +8,9 @@ import seaborn as sns
 import torch
 import csv 
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import FAIREOObjectDetectionPascalSchema
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 
 '''
 This dataset is the data files for the NeonTreeEvaluation Benchmark for individual tree detection 

@@ -8,9 +8,9 @@ from datetime import timedelta
 import datetime
 import calendar
 
-from ..base import BaseDataset
+from aitlas.base import BaseDataset
 from .schemas import DynamicEarthNetSchema
-from ..utils import image_loader
+from aitlas.utils import image_loader
 
 
 """

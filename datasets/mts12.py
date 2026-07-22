@@ -9,7 +9,7 @@ from matplotlib.patches import Patch
 import math
 import seaborn as sns
 
-from ..base import BaseDataset
+from aitlas.base import BaseDataset
 from .schemas import MTS12Schema
 
 

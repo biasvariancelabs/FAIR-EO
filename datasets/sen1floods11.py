@@ -6,8 +6,8 @@ from matplotlib.patches import Patch
 import seaborn as sns
 import csv
 
-from ..base import BaseDataset
-from ..utils import image_loader
+from aitlas.base import BaseDataset
+from aitlas.utils import image_loader
 from .schemas import Sen1Floods11Schema
 
 """

@@ -10,9 +10,9 @@ import glob
 import tifffile
 from shapely.geometry import box
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import FAIREOObjectDetectionYoloSchema
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 
 '''
 The IDTReeS (Integrating Data science with Trees and Remote Sensing) dataset was created for a competition held in 2020. 

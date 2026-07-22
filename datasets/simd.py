@@ -6,9 +6,9 @@ import pandas as pd
 import seaborn as sns
 import torch
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import FAIREOObjectDetectionYoloSchema
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 
 '''
 The Satellite Imagery Multi-vehicles Dataset (SIMD) contains 5000 images with 45096 objects in 15 classes.

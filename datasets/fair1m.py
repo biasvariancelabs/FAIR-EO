@@ -7,9 +7,9 @@ import torch
 import xml.etree.ElementTree as ET
 import csv
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import FAIREOObjectDetectionYoloSchema
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 
 '''
 FAIR1M is a benchmark dataset for fine-grained object recognition in high resolution remote sensing imagery. 

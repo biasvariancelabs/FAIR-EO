@@ -7,9 +7,9 @@ import pandas as pd
 import seaborn as sns
 import torch
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import FAIREOObjectDetectionPascalSchema
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 
 '''
 EAGLE stands for oriEnted vehicle detection using Aerial imaGery in real-worLd scEnarios. 

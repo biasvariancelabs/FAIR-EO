@@ -5,9 +5,9 @@ import seaborn as sns
 from matplotlib.patches import Patch
 import csv
 
-from .semantic_segmentation import BaseDataset
+from aitlas.datasets.semantic_segmentation import BaseDataset
 from .schemas import BandonSchema
-from ..utils import image_loader
+from aitlas.utils import image_loader
 
 
 """

@@ -1,5 +1,5 @@
-from .multiclass_classification import MultiClassClassificationDataset
-from ..utils import image_loader
+from aitlas.datasets.multiclass_classification import MultiClassClassificationDataset
+from aitlas.utils import image_loader
 import numpy as np
 
 '''

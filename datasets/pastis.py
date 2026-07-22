@@ -7,7 +7,7 @@ import math
 import seaborn as sns
 
 from .schemas import FAIREOSchema
-from .semantic_segmentation import SemanticSegmentationDataset
+from aitlas.datasets.semantic_segmentation import SemanticSegmentationDataset
 
 '''
 PASTIS is a benchmark dataset for panoptic and semantic segmentation of agricultural parcels from satellite 

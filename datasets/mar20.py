@@ -8,9 +8,9 @@ import seaborn as sns
 import torch
 import csv
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import FAIREOObjectDetectionPascalSchema
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 
 '''
 MAR20 dataset is a publicly available remote sensing image Military Aircraft Recognition dataset used for 

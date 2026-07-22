@@ -1,4 +1,4 @@
-from .multiclass_classification import MultiClassClassificationDataset
+from aitlas.datasets.multiclass_classification import MultiClassClassificationDataset
 
 '''
 The Bijie landslide dataset is a remote sensing landslide dataset for developing automatic landslide 

@@ -9,9 +9,9 @@ import csv
 from xml.etree import ElementTree as et
 import fnmatch
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import RarePlanesSchema
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 
 
 '''

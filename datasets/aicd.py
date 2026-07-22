@@ -6,8 +6,8 @@ import seaborn as sns
 from matplotlib.patches import Patch
 import csv
 
-from .semantic_segmentation import BaseDataset
-from ..utils import image_loader
+from aitlas.datasets.semantic_segmentation import BaseDataset
+from aitlas.utils import image_loader
 from .schemas import FAIREOSchema
 
 

@@ -7,9 +7,9 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import xml.etree.ElementTree as ET
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import FAIREOObjectDetectionYoloSchema
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 
 '''
 SWIM-Ship Wake Imagery Mass dataset is a benchmark dataset built for deep learning-based ship wake 

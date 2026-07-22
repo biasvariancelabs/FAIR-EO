@@ -8,7 +8,7 @@ from scipy.ndimage import zoom
 import seaborn as sns
 import h5py
 
-from ..base import BaseDataset
+from aitlas.base import BaseDataset
 from .schemas import Sen4AgriNetSchema
 
 

@@ -7,9 +7,9 @@ import json
 import torch
 import csv
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import ArtifivePotsdamSchema
-from .object_detection import BaseObjectDetectionDataset
+from aitlas.datasets.object_detection import BaseObjectDetectionDataset
 
 '''
 A benchmark dataset for vehicle detection in aerial imagery. Combining real data from the 
