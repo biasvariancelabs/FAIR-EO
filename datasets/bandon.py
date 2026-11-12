@@ -44,7 +44,11 @@ class BandonDataset(BaseDataset):
         pre_image = (pre_image - pre_image.min()) / (pre_image.max() - pre_image.min() + 1e-8)
         post_image = (post_image - post_image.min()) / (post_image.max() - post_image.min() + 1e-8)
 
-        mask = image_loader(self.data_dir + self.change_image[index])  
+        mask = image_loader(self.data_dir + self.change_image[index])
+        # train and test images have their mask in labels_unch0ch1ig255 folder and have values 0 or 1
+        # val images have their mask in labels folder and have values 0 or 255
+        if "/labels/" in self.change_image[index]:                   
+            mask = (mask == 255).astype(mask.dtype)
         masks = [(mask == v) for v, label in enumerate(self.labels)]
         mask = np.stack(masks, axis=-1).astype("float32")
 
