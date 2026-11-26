@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Patch
 
-from ..utils import image_invert, image_loader
+from aitlas.utils import image_invert, image_loader
 from .semantic_segmentation import SemanticSegmentationDataset
 
 

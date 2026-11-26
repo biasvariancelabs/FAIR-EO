@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from ..base import BaseDataset
+from aitlas.base import BaseDataset
 from .schemas import So2SatDatasetSchema
 
 

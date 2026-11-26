@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .semantic_segmentation import SemanticSegmentationDataset
 
 

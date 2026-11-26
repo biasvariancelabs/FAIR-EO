@@ -16,8 +16,8 @@ from PIL import Image
 from skimage.transform import resize
 from torch.utils.data import DataLoader, Dataset
 
-from ..base import BaseDataset
-from ..utils import tiff_loader
+from aitlas.base import BaseDataset
+from aitlas.utils import tiff_loader
 from .schemas import BigEarthNetSchema
 
 

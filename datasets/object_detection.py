@@ -9,8 +9,8 @@ import seaborn as sns
 import torch
 from matplotlib import patches
 
-from ..base import BaseDataset
-from ..utils import collate_fn, image_loader
+from aitlas.base import BaseDataset
+from aitlas.utils import collate_fn, image_loader
 from .schemas import (
     ObjectDetectionCocoDatasetSchema,
     ObjectDetectionPascalDatasetSchema,

@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .semantic_segmentation import SemanticSegmentationDataset
 
 

@@ -7,7 +7,7 @@ import pandas as pd
 from matplotlib.patches import Patch
 from skimage.transform import resize
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .schemas import CloudDatasets_AI4QCSchema
 from .semantic_segmentation import SemanticSegmentationDataset
 

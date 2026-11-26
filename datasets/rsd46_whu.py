@@ -1,7 +1,7 @@
 import numpy as np
 from PIL import Image
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .multiclass_classification import MultiClassClassificationDataset
 
 

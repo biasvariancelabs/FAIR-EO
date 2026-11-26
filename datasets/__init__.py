@@ -1,3 +1,10 @@
+"""Dataset loaders for FAIR-EO, built on AiTLAS.
+
+BigEarthNet and SkyScapes each have two loaders with the same class name. Import them from their
+modules: datasets.bigearthnet_19 or datasets.bigearthnet_43, and datasets.skyscapes or
+datasets.dlr_skyscapes.
+"""
+
 # Semantic segmentation datasets
 from .aerorit import AeroRITDataset
 from .aeroscapes import AeroscapesDataset
@@ -112,6 +119,9 @@ from .whu_ohs import WHUOHSDataset
 from .whu_opt_sar import WHUOPTSARDataset
 from .wscs_semantic_segmentation import WSCSSemanticSegmentationDataset
 from .zurich_summer import ZurichSummerDataset
+from .gta_v_sid import GTADataset
+from .whuaerial import WHUAerialDataset
+from .whumix import WHUMixDataset
 
 # Multiclass classification datasets
 from .aerial_cactus_identification import AerialCactusIdentificationDataset
@@ -177,7 +187,10 @@ from .wscs_image_classification import WSCSImageClassificationDataset
 
 # Multilabel classification datasets
 from .aid import AIDDataset
-from .big_earth_net import BigEarthNetDataset
+from .aid_multilabel import AIDMultiLabelDataset
+from .dfc15_multilabel import DFC15MultiLabelDataset
+from .rapidai4eo import RapidAI4EODataset
+from .uc_merced_multilabel import UcMercedMultiLabelDataset
 from .dlrsd_multilabel import DLRSDMultilabelDataset
 from .mlrs_net import MLRSNetMultiLabelDataset
 from .multiscene import MultiSceneDataset
@@ -272,3 +285,24 @@ from .vedai import VEDAIDataset
 from .vhr10 import VHR10Dataset
 from .visdrone import VisDroneDataset
 from .xview import xviewDataset
+
+# Time series datasets
+from .biomassters import BioMasstersDataset
+from .breizhcrops import BreizhCropsDataset
+from .cashew_plantation import CashewPlantationDataset
+from .crop_type_kenya import CropTypeKenyaDataset
+from .crop_type_mapping_ghana_south_sudan import CropTypeGhanaSoudanDataset
+from .cropharvest import CropHarvestDataset
+from .cv4a_kenya_crop_type import CV4AKenyaCropTypeDataset
+from .eopatch_crops import EOPatchCrops
+from .mts12 import MTS12Dataset
+from .ood_land_cover import OODLandCoverDataset
+from .pastis import PASTISDataset
+from .pastis_hd import PASTISHDDataset
+from .sa_crop_type import SACropTypeDataset
+from .sen4agrinet import Sen4AgriNetDataset
+from .treesatai_ts import TreeSatAI_TSDataset
+
+# Anomaly detection datasets (AI4QC)
+from .s1anomalies_ai4qc import S1NewAnomaliesDataset
+from .s2anomalies_ai4qc import S2NewAnomaliesDataset
