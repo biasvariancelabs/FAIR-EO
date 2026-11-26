@@ -8,8 +8,8 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from ..base import BaseDataset
-from ..utils import image_loader, load_voc_format_dataset
+from aitlas.base import BaseDataset
+from aitlas.utils import image_loader, load_voc_format_dataset
 from .schemas import ClassificationDatasetSchema
 
 

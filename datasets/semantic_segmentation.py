@@ -8,8 +8,8 @@ import pandas as pd
 import seaborn as sns
 from matplotlib.patches import Patch
 
-from ..base import BaseDataset
-from ..utils import image_loader
+from aitlas.base import BaseDataset
+from aitlas.utils import image_loader
 from .schemas import SegmentationDatasetSchema
 
 

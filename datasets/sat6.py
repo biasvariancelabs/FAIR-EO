@@ -7,7 +7,7 @@ import pandas as pd
 import scipy.io
 import seaborn as sns
 
-from ..base import BaseDataset
+from aitlas.base import BaseDataset
 from .schemas import MatDatasetSchema
 
 

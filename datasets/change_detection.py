@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 
-from ..base import BaseDataset
+from aitlas.base import BaseDataset
 from .schemas import SegmentationDatasetSchema
 
 """

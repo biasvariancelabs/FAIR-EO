@@ -2,7 +2,7 @@ import numpy as np
 from numpy import load
 from PIL import Image
 
-from ..base import BaseDataset
+from aitlas.base import BaseDataset
 from .schemas import NPZDatasetSchema
 
 

@@ -3,8 +3,8 @@ import random
 import matplotlib.pyplot as plt
 import torch
 
-from ..base import BaseDataset
-from ..utils import collate_fn
+from aitlas.base import BaseDataset
+from aitlas.utils import collate_fn
 from .schemas import ClusteringDatasetSchema
 
 

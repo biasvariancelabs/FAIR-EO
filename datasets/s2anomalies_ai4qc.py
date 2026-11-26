@@ -1,6 +1,6 @@
 import os
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .clustering import ClusteringDataset
 from .schemas import ClusteringDatasetSchema
 

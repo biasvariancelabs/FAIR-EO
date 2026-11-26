@@ -22,9 +22,9 @@ from skimage.morphology import dilation, erosion, square
 from skimage.segmentation import watershed
 from tqdm import tqdm
 
-from ..base import BaseDataset
-from ..datasets.schemas import SpaceNet6DatasetSchema
-from ..utils import parse_img_id
+from aitlas.base import BaseDataset
+from .schemas import SpaceNet6DatasetSchema
+from aitlas.utils import parse_img_id
 
 
 # Ignore the "low-contrast" warnings

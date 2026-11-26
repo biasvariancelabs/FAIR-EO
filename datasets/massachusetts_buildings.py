@@ -1,6 +1,6 @@
 import numpy as np
 
-from ..utils import image_loader
+from aitlas.utils import image_loader
 from .semantic_segmentation import SemanticSegmentationDataset
 
 
